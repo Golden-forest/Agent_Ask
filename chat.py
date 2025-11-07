@@ -29,7 +29,7 @@ llm = ChatOpenAI(
 def load_prompt():
     """加载提示词"""
     try:
-        with open('example_prompt_template.txt', 'r', encoding='utf-8') as f:
+        with open('prompt.txt', 'r', encoding='utf-8') as f:
             return f.read()
     except:
         return "你是一个专业的编程助手。"
