@@ -1,20 +1,51 @@
 """
-需求澄清助手 - 简化版
-使用LangChain直接调用，避免CrewAI迭代问题
+极简主义需求澄清助手
+采用DeepSeek官网的简洁设计风格
+专注于核心对话功能，去除一切装饰性元素
 """
 
 import os
 import streamlit as st
+import time
+from typing import Dict, List, Optional, Any
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
+# 导入极简UI系统
+from ui import (
+    apply_minimal_style,
+    create_minimal_interface,
+    handle_minimal_actions,
+    show_minimal_loading,
+    add_minimal_message,
+    clear_minimal_messages,
+    get_minimal_messages
+)
+
+# 导入网络搜索功能
+try:
+    from search import search_requirement_context, web_searcher
+    SEARCH_ENABLED = True
+except ImportError:
+    SEARCH_ENABLED = False
+    print("网络搜索模块未导入")
+
+# 可选的数据库支持
+try:
+    from database import get_db_manager, DatabaseManager
+    db_manager = get_db_manager()
+    DB_ENABLED = True
+except Exception:
+    DB_ENABLED = False
+    db_manager = None
+
 load_dotenv()
 
-# 设置页面配置
+# 设置页面配置 - 极简模式
 st.set_page_config(
     page_title="需求澄清助手",
-    page_icon="🤖",
-    layout="centered"
+      layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 # 设置LLM
@@ -23,8 +54,8 @@ def get_llm():
     """缓存LLM实例"""
     return ChatOpenAI(
         model="deepseek-chat",
-        openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
-        openai_api_base=os.getenv("DEEPSEEK_BASE_URL"),
+        openai_api_key=os.getenv("DEEPSEEK_API_KEY", ""),
+        openai_api_base=os.getenv("DEEPSEEK_BASE_URL", ""),
     )
 
 
@@ -49,7 +80,6 @@ def extract_optimized_requirement(content):
             result_lines.append(line)
         elif in_optimized_section:
             if line.startswith('## '):
-                # 遇到下一个二级标题，停止
                 break
             result_lines.append(line)
 
@@ -58,190 +88,259 @@ def extract_optimized_requirement(content):
     return None
 
 
+def generate_comprehensive_requirement_report(conversation_history):
+    """生成完整的需求分析报告"""
+    if not conversation_history:
+        return "暂无对话历史可供分析。"
+
+    user_inputs = [msg['content'] for msg in conversation_history if msg['role'] == 'user']
+    ai_responses = [msg['content'] for msg in conversation_history if msg['role'] == 'assistant']
+
+    if not user_inputs:
+        return "暂无用户输入可供分析。"
+
+    report_prompt = f"""
+    基于以下对话历史，请生成一份完整的需求分析报告：
+
+    用户输入：
+    {chr(10).join([f"- {inp}" for inp in user_inputs])}
+
+    AI回复：
+    {chr(10).join([f"- {resp[:200]}..." if len(resp) > 200 else f"- {resp}" for resp in ai_responses])}
+
+    请按照以下格式生成报告：
+
+    # 需求分析报告
+
+    ## 1. 项目概述
+    [基于对话内容总结项目基本信息]
+
+    ## 2. 核心需求
+    [列出用户明确表达的核心需求]
+
+    ## 3. 功能需求
+    [基于对话分析得出的功能需求清单]
+
+    ## 4. 非功能需求
+    [性能、安全、可用性等非功能性需求]
+
+    ## 5. 技术建议
+    [基于需求特点的技术选型建议]
+
+    ## 6. 风险评估
+    [潜在的技术和业务风险]
+
+    ## 7. 下一步行动
+    [具体的实施建议和优先级]
+
+    ## 8. 优化后的需求
+    [基于对话澄清后的最终需求描述]
+
+    请确保报告内容详实、结构清晰，为后续开发提供明确指导。
+    """
+
+    try:
+        llm = get_llm()
+        response = llm.invoke(report_prompt)
+        if response and response.content:
+            # 保存到数据库
+            if DB_ENABLED and db_manager:
+                try:
+                    db_manager.save_requirement_analysis(
+                        conversation_id=st.session_state.get('conversation_id'),
+                        original_requirements=user_inputs,
+                        analysis_result=response.content,
+                        ai_responses=ai_responses
+                    )
+                except Exception as e:
+                    print(f"保存需求分析失败: {e}")
+            return response.content
+        else:
+            return "生成需求分析报告时出现错误，请重试。"
+    except Exception as e:
+        return f"生成需求分析报告时出错：{str(e)}"
+
+
 def get_response(user_input, conversation_history):
     """获取AI回复"""
+    if not user_input or not user_input.strip():
+        return "请输入有效的需求描述"
+
+    # 限制对话历史长度
+    max_history = 10
+    if len(conversation_history) > max_history:
+        conversation_history = conversation_history[-max_history:]
+
     llm = get_llm()
     prompt_template = load_prompt()
 
-    # 构建完整对话历史
+    # 构建对话历史
     history_text = ""
     if conversation_history:
-        history_text = "\n\n=== 对话历史 ===\n"
+        history_lines = []
+        history_lines.append("=== 对话历史 ===")
         for msg in conversation_history:
-            if msg['role'] == 'user':
-                history_text += f"用户: {msg['content']}\n"
-            else:
-                history_text += f"助手: {msg['content']}\n"
-        history_text += "=== 历史结束 ===\n\n"
+            role = "用户" if msg['role'] == 'user' else "助手"
+            content = msg['content'][:500]
+            history_lines.append(f"{role}: {content}")
+        history_lines.append("=== 历史结束 ===")
+        history_text = "\n\n".join(history_lines) + "\n\n"
 
-    full_prompt = f"""{prompt_template}
+    # 检查是否需要搜索
+    search_info = ""
+    should_search = False
+    is_initial_requirement = len(conversation_history) == 0
+    is_accept_request = user_input.lower() == "accept"
 
-{history_text}用户当前输入：{user_input}
+    # 处理Accept请求
+    if is_accept_request and len(conversation_history) >= 3:
+        return generate_comprehensive_requirement_report(conversation_history)
 
-请根据对话历史和用户当前输入，生成适当的回复。
+    # 初始需求的网络搜索
+    if (is_initial_requirement and
+        SEARCH_ENABLED and
+        web_searcher.enabled and
+        st.session_state.get('enable_search', False) and
+        len(user_input) > 10):
+        should_search = True
+        try:
+            search_info = search_requirement_context(user_input)
+            if search_info and len(search_info.strip()) > 0:
+                search_info = f"\n\n网络搜索信息：{search_info}"
+        except Exception as e:
+            search_info = f"\n\n搜索时出现错误：{str(e)}"
+
+    # 构建完整提示词
+    full_prompt = f"""
+{prompt_template}
+
+{history_text}
+用户当前输入：{user_input}
+{search_info}
+
+请根据对话历史和用户当前输入，生成适当的回复：
 - 如果这是初始需求，请提出第一个澄清问题
 - 如果用户在回答问题，请基于回答提出下一个问题
-- 如果用户说"Accept"，请生成完整的需求分析报告
+- 提供A/B/C/D选项帮助用户明确选择
+- Accept功能会单独生成完整的需求分析报告{"，已为您提供相关网络搜索信息作为参考" if should_search else ""}
 
-开始回复：
-"""
+开始回复："""
 
     try:
         response = llm.invoke(full_prompt)
-        return response.content
+        if response and response.content:
+            return response.content
+        else:
+            return "抱歉，没有收到有效的回复。请重试。"
     except Exception as e:
-        return f"处理请求时出错：{str(e)}"
+        return f"抱歉，处理您的请求时遇到了问题：{str(e)}"
+
+
+def process_user_message(user_input: str):
+    """处理用户消息"""
+    if not user_input or not user_input.strip():
+        return
+
+    try:
+        # 添加用户消息
+        add_minimal_message("user", user_input)
+
+        # 保存到数据库
+        if DB_ENABLED and db_manager:
+            try:
+                db_manager.save_message(
+                    st.session_state.conversation_id, "user", user_input
+                )
+            except Exception as e:
+                print(f"保存消息失败: {e}")
+
+        # 显示加载状态
+        show_minimal_loading()
+
+        # 获取AI回复
+        response = get_response(user_input, get_minimal_messages())
+
+        # 添加AI回复
+        add_minimal_message("assistant", response)
+
+        # 保存AI回复到数据库
+        if DB_ENABLED and db_manager:
+            try:
+                db_manager.save_message(
+                    st.session_state.conversation_id, "assistant", response
+                )
+            except Exception as e:
+                print(f"保存消息失败: {e}")
+
+        # 检查是否有优化后的需求
+        optimized_req = extract_optimized_requirement(response)
+        if optimized_req:
+            st.markdown(f"""
+            <div style="max-width: 600px; margin: 2rem auto; padding: 1rem;
+                        background: #2D3748; border-radius: 8px; border: 1px solid #4A5568;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #E2E8F0;">
+                    📋 优化后的需求
+                </div>
+                <div style="white-space: pre-wrap; line-height: 1.6; color: #CBD5E0;">
+                    {optimized_req}
+                </div>
+                <div style="margin-top: 0.5rem; text-align: right; color: #718096; font-size: 12px;">
+                    💡 请选择上方文本并复制
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    except Exception as e:
+        error_msg = f"处理消息时发生错误：{str(e)}"
+        add_minimal_message("assistant", "抱歉，处理您的消息时出现了问题。请尝试重新发送或刷新页面。")
+
+
+def handle_quick_action(selected_option: str):
+    """处理快捷操作"""
+    if selected_option:
+        if selected_option.lower() == "accept":
+            process_user_message("Accept")
+        else:
+            process_user_message(selected_option)
 
 
 def main():
-    """主界面"""
-
-    # 标题
-    st.title("🤖 需求澄清助手")
+    """极简主义主界面"""
 
     # 初始化会话状态
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # 显示欢迎信息
-    if not st.session_state.messages:
-        st.info(
-            "👋 欢迎使用需求澄清助手！\n\n"
-            "💡 **使用方式：**\n"
-            "1. 描述你的初始想法或需求\n"
-            "2. 我会提出关键问题帮助你澄清\n"
-            "3. 提供A/B/C/D选项供你选择\n"
-            "4. 输入\"Accept\"获取完整的需求分析\n\n"
-            "请开始描述你的需求吧！"
-        )
+    if "conversation_id" not in st.session_state:
+        import uuid
+        st.session_state.conversation_id = f"minimal_{uuid.uuid4().hex[:8]}"
 
-    # 显示聊天历史
-    for i, message in enumerate(st.session_state.messages):
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    if "enable_search" not in st.session_state:
+        st.session_state.enable_search = SEARCH_ENABLED and web_searcher.enabled if SEARCH_ENABLED else False
 
-            # 如果是AI回复且包含优化后的需求，添加复制按钮
-            if message["role"] == "assistant":
-                optimized_req = extract_optimized_requirement(message["content"])
-                if optimized_req:
-                    col1, col2 = st.columns([1, 1])
-                    with col2:
-                        if st.button("📋 复制优化结果", key=f"copy_history_{i}"):
-                            # 展开可复制的文本
-                            with st.expander("点击展开复制文本", expanded=True):
-                                st.code(optimized_req, language="text")
-                                st.caption("💡 请选择上方文本并按 Ctrl+C（或 Cmd+C）复制")
+    # 创建极简界面
+    interface_result = create_minimal_interface()
 
-    # 添加CSS样式
-    st.markdown("""
-    <style>
-    .stButton > button {
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-        padding: 0.3rem 0.8rem;
-        font-size: 0.8rem;
-        height: 36px;
-        transition: all 0.2s;
-    }
-    .stButton > button:hover {
-        border-color: #4A90E2;
-        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # 处理快捷操作
+    if interface_result.get('selected_option'):
+        handle_quick_action(interface_result['selected_option'])
+        st.rerun()
 
-    # 快捷按钮区域 - 放在输入框上方
-    cols = st.columns([1, 1, 1, 1, 1, 2])
+    # 处理按钮操作
+    handle_minimal_actions(
+        interface_result.get('clear_button', False),
+        interface_result.get('history_button', False)
+    )
 
-    with cols[0]:
-        if st.button("A", use_container_width=True):
-            st.session_state.quick_input = "A"
-            st.rerun()
+    # 处理发送消息
+    send_button = interface_result.get('send_button', False)
+    user_input = interface_result.get('user_input', '')
 
-    with cols[1]:
-        if st.button("B", use_container_width=True):
-            st.session_state.quick_input = "B"
-            st.rerun()
+    if send_button and user_input.strip():
+        process_user_message(user_input)
+        st.rerun()
 
-    with cols[2]:
-        if st.button("C", use_container_width=True):
-            st.session_state.quick_input = "C"
-            st.rerun()
-
-    with cols[3]:
-        if st.button("D", use_container_width=True):
-            st.session_state.quick_input = "D"
-            st.rerun()
-
-    with cols[4]:
-        if st.button("Accept", use_container_width=True):
-            st.session_state.quick_input = "Accept"
-            st.rerun()
-
-    # 清空对话按钮
-    with cols[5]:
-        if st.button("🗑️ 清空对话", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
-
-    # 处理快捷输入
-    if "quick_input" in st.session_state:
-        quick_input = st.session_state.quick_input
-        del st.session_state.quick_input
-
-        # 添加用户消息
-        st.session_state.messages.append({"role": "user", "content": quick_input})
-
-        # 显示用户消息
-        with st.chat_message("user"):
-            st.markdown(quick_input)
-
-        # 获取AI回复
-        with st.chat_message("assistant"):
-            with st.spinner("🤔 AI正在分析..."):
-                response = get_response(quick_input, st.session_state.messages)
-                st.markdown(response)
-
-            # 检查是否有优化后的需求，并添加复制按钮
-            optimized_req = extract_optimized_requirement(response)
-            if optimized_req:
-                col1, col2 = st.columns([1, 1])
-                with col2:
-                    if st.button("📋 复制优化结果", key=f"copy_{len(st.session_state.messages)}"):
-                        with st.expander("点击展开复制文本", expanded=True):
-                            st.code(optimized_req, language="text")
-                            st.caption("💡 请选择上方文本并按 Ctrl+C（或 Cmd+C）复制")
-
-        # 添加AI回复到历史
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-    # 用户输入
-    if prompt := st.chat_input("请输入需求..."):
-        # 添加用户消息
-        st.session_state.messages.append({"role": "user", "content": prompt})
-
-        # 显示用户消息
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # 获取AI回复
-        with st.chat_message("assistant"):
-            with st.spinner("🤔 AI正在分析..."):
-                response = get_response(prompt, st.session_state.messages)
-                st.markdown(response)
-
-            # 检查是否有优化后的需求，并添加复制按钮
-            optimized_req = extract_optimized_requirement(response)
-            if optimized_req:
-                col1, col2 = st.columns([1, 1])
-                with col2:
-                    if st.button("📋 复制优化结果", key=f"copy_manual_{len(st.session_state.messages)}"):
-                        with st.expander("点击展开复制文本", expanded=True):
-                            st.code(optimized_req, language="text")
-                            st.caption("💡 请选择上方文本并按 Ctrl+C（或 Cmd+C）复制")
-
-        # 添加AI回复到历史
-        st.session_state.messages.append({"role": "assistant", "content": response})
+    # 搜索状态显示已集成到minimal_ui中
 
 
 if __name__ == "__main__":
