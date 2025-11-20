@@ -10,6 +10,7 @@ import time
 from typing import Dict, List, Optional, Any
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from config import app_config
 
 # 导入极简UI系统
 from ui import (
@@ -167,7 +168,7 @@ def get_response(user_input, conversation_history):
         return "请输入有效的需求描述"
 
     # 限制对话历史长度
-    max_history = 10
+    max_history = app_config.MAX_CONVERSATION_HISTORY
     if len(conversation_history) > max_history:
         conversation_history = conversation_history[-max_history:]
 
@@ -186,6 +187,7 @@ def get_response(user_input, conversation_history):
         history_lines.append("=== 历史结束 ===")
         history_text = "\n\n".join(history_lines) + "\n\n"
 
+
     # 检查是否需要搜索
     search_info = ""
     should_search = False
@@ -193,22 +195,29 @@ def get_response(user_input, conversation_history):
     is_accept_request = user_input.lower() == "accept"
 
     # 处理Accept请求
-    if is_accept_request and len(conversation_history) >= 3:
+    if is_accept_request and len(conversation_history) >= app_config.MIN_MESSAGES_FOR_REPORT:
         return generate_comprehensive_requirement_report(conversation_history)
 
-    # 初始需求的网络搜索
-    if (is_initial_requirement and
-        SEARCH_ENABLED and
-        web_searcher.enabled and
-        st.session_state.get('enable_search', False) and
-        len(user_input) > 10):
-        should_search = True
+    # 智能判断是否触发搜索
+    if not is_accept_request and SEARCH_ENABLED and web_searcher.enabled and st.session_state.get('enable_search', False):
+        # 初始需求必搜索
+        if is_initial_requirement and len(user_input) > app_config.SEARCH_MIN_LENGTH:
+            should_search = True
+        # 后续对话可选搜索
+        elif app_config.SEARCH_ON_FOLLOWUP and len(user_input) > app_config.SEARCH_MIN_LENGTH:
+            # 检测关键词：技术栈、框架、工具等
+            search_keywords = ['技术', '框架', '工具', '方案', '实现', '如何', '什么', '怎么']
+            should_search = any(kw in user_input for kw in search_keywords)
+        
+    # 执行搜索
+    if should_search:
         try:
             search_info = search_requirement_context(user_input)
             if search_info and len(search_info.strip()) > 0:
                 search_info = f"\n\n网络搜索信息：{search_info}"
         except Exception as e:
             search_info = f"\n\n搜索时出现错误：{str(e)}"
+
 
     # 构建完整提示词
     full_prompt = f"""

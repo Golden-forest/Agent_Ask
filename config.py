@@ -33,7 +33,17 @@ class AppConfig:
     SEARCH_TIMEOUT: int = 10
 
     # 数据库配置
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./chat.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///chat.db")
+    
+    # 对话配置
+    MAX_CONVERSATION_HISTORY: int = int(os.getenv("MAX_CONVERSATION_HISTORY", "10"))
+    SEARCH_MIN_LENGTH: int = int(os.getenv("SEARCH_MIN_LENGTH", "10"))
+    SEARCH_ON_FOLLOWUP: bool = os.getenv("SEARCH_ON_FOLLOWUP", "false").lower() == "true"
+    MIN_MESSAGES_FOR_REPORT: int = int(os.getenv("MIN_MESSAGES_FOR_REPORT", "3"))
+    
+    # 搜索配置
+    ENABLE_SEARCH_CACHE: bool = os.getenv("ENABLE_SEARCH_CACHE", "true").lower() == "true"
+    SEARCH_CACHE_TTL_HOURS: int = int(os.getenv("SEARCH_CACHE_TTL_HOURS", "24"))
     DB_ENABLED: bool = True
 
     # 性能配置
