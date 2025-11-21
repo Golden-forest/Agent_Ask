@@ -43,10 +43,12 @@ except Exception:
 load_dotenv()
 
 # 设置页面配置 - 极简模式
+# 设置页面配置 - 极简模式
 st.set_page_config(
-    page_title="需求澄清助手",
-      layout="centered",
-    initial_sidebar_state="collapsed"
+    page_title=app_config.PAGE_TITLE,
+    page_icon=app_config.PAGE_ICON,
+    layout=app_config.LAYOUT,
+    initial_sidebar_state=app_config.INITIAL_SIDEBAR_STATE
 )
 
 # 设置LLM
@@ -162,70 +164,77 @@ def generate_comprehensive_requirement_report(conversation_history):
         return f"生成需求分析报告时出错：{str(e)}"
 
 
-def get_response(user_input, conversation_history):
-    """获取AI回复"""
-    if not user_input or not user_input.strip():
-        return "请输入有效的需求描述"
-
-    # 限制对话历史长度
-    max_history = app_config.MAX_CONVERSATION_HISTORY
-    if len(conversation_history) > max_history:
-        conversation_history = conversation_history[-max_history:]
+def get_response_stream(user_input, history):
+    """获取AI流式回复"""
+    # 处理Accept请求 - 直接生成报告（非流式）
+    is_accept_request = user_input.strip().lower() == "accept"
+    if is_accept_request:
+        # 获取完整的历史记录用于生成报告
+        if DB_ENABLED and db_manager:
+            session = db_manager.get_session()
+            from database import Message
+            db_messages = session.query(Message).filter(
+                Message.conversation_id == st.session_state.conversation_id
+            ).order_by(Message.timestamp).all()
+            full_history = [{"role": m.role, "content": m.content} for m in db_messages]
+            session.close()
+        else:
+            full_history = history
+            
+        if len(full_history) >= app_config.MIN_MESSAGES_FOR_REPORT:
+            return generate_comprehensive_requirement_report(full_history)
+        else:
+            return f"对话历史不足（至少需要{app_config.MIN_MESSAGES_FOR_REPORT}轮），无法生成报告。请继续对话。"
 
     llm = get_llm()
-    prompt_template = load_prompt()
-
-    # 构建对话历史
-    history_text = ""
-    if conversation_history:
-        history_lines = []
-        history_lines.append("=== 对话历史 ===")
-        for msg in conversation_history:
-            role = "用户" if msg['role'] == 'user' else "助手"
-            content = msg['content'][:500]
-            history_lines.append(f"{role}: {content}")
-        history_lines.append("=== 历史结束 ===")
-        history_text = "\n\n".join(history_lines) + "\n\n"
-
-
-    # 检查是否需要搜索
-    search_info = ""
+    
+    # 构建提示词
+    base_prompt = load_prompt()
+    
+    # 构建对话历史字符串
+    history_str = ""
+    for msg in history[-10:]:  # 只取最近10条
+        role = "用户" if msg["role"] == "user" else "助手"
+        history_str += f"{role}: {msg['content']}\n"
+    
+    # 判断是否需要搜索
     should_search = False
-    is_initial_requirement = len(conversation_history) == 0
-    is_accept_request = user_input.lower() == "accept"
-
-    # 处理Accept请求
-    if is_accept_request and len(conversation_history) >= app_config.MIN_MESSAGES_FOR_REPORT:
-        return generate_comprehensive_requirement_report(conversation_history)
-
-    # 智能判断是否触发搜索
-    if not is_accept_request and SEARCH_ENABLED and web_searcher.enabled and st.session_state.get('enable_search', False):
+    search_results = ""
+    
+    # 智能搜索判断逻辑
+    is_initial_requirement = len(history) == 0
+    
+    if SEARCH_ENABLED:
         # 初始需求必搜索
         if is_initial_requirement and len(user_input) > app_config.SEARCH_MIN_LENGTH:
             should_search = True
-        # 后续对话可选搜索
-        elif app_config.SEARCH_ON_FOLLOWUP and len(user_input) > app_config.SEARCH_MIN_LENGTH:
-            # 检测关键词：技术栈、框架、工具等
+        # 后续对话可选搜索（基于关键词）
+        elif app_config.SEARCH_ON_FOLLOWUP:
             search_keywords = ['技术', '框架', '工具', '方案', '实现', '如何', '什么', '怎么']
             should_search = any(kw in user_input for kw in search_keywords)
-        
-    # 执行搜索
+            
     if should_search:
-        try:
-            search_info = search_requirement_context(user_input)
-            if search_info and len(search_info.strip()) > 0:
-                search_info = f"\n\n网络搜索信息：{search_info}"
-        except Exception as e:
-            search_info = f"\n\n搜索时出现错误：{str(e)}"
+        with st.status("正在搜索相关信息...", expanded=False) as status:
+            try:
+                results = web_searcher.search(user_input)
+                search_results = web_searcher.format_search_results(results)
+                status.update(label="搜索完成", state="complete", expanded=False)
+            except Exception as e:
+                status.update(label="搜索失败", state="error", expanded=False)
+                print(f"搜索失败: {e}")
 
-
-    # 构建完整提示词
+    # 组合完整提示词
     full_prompt = f"""
-{prompt_template}
+{base_prompt}
 
-{history_text}
-用户当前输入：{user_input}
-{search_info}
+相关背景信息：
+{search_results}
+
+对话历史：
+{history_str}
+
+用户当前输入：
+{user_input}
 
 请根据对话历史和用户当前输入，生成适当的回复：
 - 如果这是初始需求，请提出第一个澄清问题
@@ -236,11 +245,7 @@ def get_response(user_input, conversation_history):
 开始回复："""
 
     try:
-        response = llm.invoke(full_prompt)
-        if response and response.content:
-            return response.content
-        else:
-            return "抱歉，没有收到有效的回复。请重试。"
+        return llm.stream(full_prompt)
     except Exception as e:
         return f"抱歉，处理您的请求时遇到了问题：{str(e)}"
 
@@ -263,20 +268,45 @@ def process_user_message(user_input: str):
             except Exception as e:
                 print(f"保存消息失败: {e}")
 
-        # 显示加载状态
-        show_minimal_loading()
+        # 显示用户消息（因为 st.chat_input 提交后会重运行，所以需要手动显示刚刚发送的消息，或者依赖重绘）
+        # 在 Streamlit 中，通常重绘会处理显示，但为了流式体验，我们可能需要占位符
+        
+        with st.chat_message("assistant", avatar=None):
+            # 创建占位符用于流式输出
+            message_placeholder = st.empty()
+            full_response = ""
+            
+            # 获取流式回复
+            stream = get_response_stream(user_input, get_minimal_messages()[:-1]) # 排除刚刚添加的当前消息
+            
+            # 检查是否是生成器
+            if hasattr(stream, '__iter__') and not isinstance(stream, str):
+                for chunk in stream:
+                    if hasattr(chunk, 'content'):
+                        content = chunk.content
+                    else:
+                        content = str(chunk)
+                        
+                    if content:
+                        full_response += content
+                        # 实时更新显示，模拟打字机效果
+                        message_placeholder.markdown(full_response + "▌")
+                
+                # 移除光标
+                message_placeholder.markdown(full_response)
+            else:
+                # 如果出错返回了字符串
+                full_response = str(stream)
+                message_placeholder.markdown(full_response)
 
-        # 获取AI回复
-        response = get_response(user_input, get_minimal_messages())
-
-        # 添加AI回复
-        add_minimal_message("assistant", response)
+        # 添加AI回复到历史
+        add_minimal_message("assistant", full_response)
 
         # 保存AI回复到数据库
         if DB_ENABLED and db_manager:
             try:
                 db_manager.save_message(
-                    st.session_state.conversation_id, "assistant", response
+                    st.session_state.conversation_id, "assistant", full_response
                 )
             except Exception as e:
                 print(f"保存消息失败: {e}")

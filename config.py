@@ -15,8 +15,8 @@ class AppConfig:
     """应用配置类"""
 
     # 页面配置
-    PAGE_TITLE: str = "需求澄清助手"
-    PAGE_ICON: str = ""
+    PAGE_TITLE: str = "agent_ask"
+    PAGE_ICON: str = "💬"  # 统一使用极简气泡图标
     LAYOUT: str = "wide"
     INITIAL_SIDEBAR_STATE: str = "expanded"
 

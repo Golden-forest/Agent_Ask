@@ -8,14 +8,29 @@ import streamlit as st
 
 
 def apply_minimal_style():
-    """应用极简主义深色模式样式系统"""
+    """应用极简主义深色模式样式系统 (DeepSeek风格)"""
 
     minimal_css = """
     <style>
-    /* 极简主义全局样式 - 固定深色模式 */
+    /* 引入字体 */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    /* 全局变量 */
+    :root {
+        --bg-color: #101214;  /* DeepSeek 深色背景 */
+        --text-color: #E2E8F0;
+        --accent-color: #4E61E6; /* DeepSeek 蓝 */
+        --border-color: #2D3748;
+        --input-bg: #1A202C;
+        --capsule-bg: #2D3748;
+        --capsule-hover: #4A5568;
+    }
+
+    /* 极简主义全局样式 */
     .stApp {
-        background: #1A202C;
-        color: #E2E8F0;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     /* 隐藏所有装饰元素 */
@@ -26,20 +41,20 @@ def apply_minimal_style():
 
     /* 主容器 - 居中布局 */
     .main .block-container {
-        max-width: 800px;
+        max-width: 768px;
         margin: 0 auto;
-        padding: 2rem 1rem;
+        padding: 2rem 1rem 8rem 1rem; /* 底部留白给输入框 */
         background: transparent;
     }
 
     /* 标题 - 极简风格 */
     h1 {
-        color: #E2E8F0;
-        font-size: 32px;
+        color: var(--text-color);
+        font-size: 28px;
         font-weight: 600;
         text-align: center;
-        margin-bottom: 3rem;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin-bottom: 2rem;
+        letter-spacing: -0.5px;
     }
 
     /* 移除所有卡片装饰 */
@@ -54,83 +69,107 @@ def apply_minimal_style():
     /* 极简输入框样式 */
     .stTextInput > div > div > input,
     .stTextArea > div > div > textarea {
-        border: 1px solid #4A5568;
-        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
         padding: 16px;
         font-size: 16px;
-        background: #2D3748;
-        color: #E2E8F0;
-        transition: all 0.3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--input-bg);
+        color: var(--text-color);
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.6;
     }
 
     .stTextInput > div > div > input:focus,
     .stTextArea > div > div > textarea:focus {
-        border-color: #4299E1;
+        border-color: var(--accent-color);
         outline: none;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        box-shadow: 0 0 0 2px rgba(78, 97, 230, 0.2);
     }
 
     /* 极简按钮样式 */
     .stButton > button {
-        background: #2D3748;
-        color: #E2E8F0;
+        background: var(--accent-color);
+        color: white;
         border: none;
         border-radius: 8px;
-        padding: 12px 24px;
-        font-size: 16px;
+        padding: 10px 20px;
+        font-size: 14px;
         font-weight: 500;
-        transition: all 0.3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        min-height: 48px;
+        transition: all 0.2s ease;
+        min-height: 40px;
     }
 
     .stButton > button:hover {
-        background: #4A5568;
+        opacity: 0.9;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(78, 97, 230, 0.3);
     }
 
     /* 次要按钮 */
     .stButton.secondary > button {
         background: transparent;
-        color: #E2E8F0;
-        border: 1px solid #4A5568;
+        color: #A0AEC0;
+        border: 1px solid var(--border-color);
     }
 
     .stButton.secondary > button:hover {
-        background: #2D3748;
+        background: var(--capsule-bg);
+        color: var(--text-color);
     }
 
     /* 消息显示 - 极简风格 */
     .minimal-message {
-        padding: 16px 0;
+        padding: 12px 0;
         margin: 8px 0;
-        border-bottom: 1px solid #4A5568;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.6;
-    }
-
-    .minimal-message:last-child {
-        border-bottom: none;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.7;
+        display: flex;
+        gap: 12px;
     }
 
     .minimal-user-message {
-        text-align: right;
-        color: #E2E8F0;
+        justify-content: flex-end;
+    }
+    
+    .minimal-user-content {
+        background: var(--capsule-bg);
+        padding: 10px 16px;
+        border-radius: 12px 12px 0 12px;
+        color: var(--text-color);
+        max-width: 80%;
     }
 
     .minimal-assistant-message {
-        text-align: left;
+        justify-content: flex-start;
+    }
+    
+    .minimal-assistant-content {
+        background: transparent;
+        padding: 0;
         color: #CBD5E0;
+        max-width: 100%;
     }
 
-    .minimal-message-role {
-        font-size: 12px;
-        font-weight: 600;
-        color: #718096;
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .minimal-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    .user-avatar {
+        background: #4A5568;
+        color: white;
+    }
+    
+    .assistant-avatar {
+        background: var(--accent-color);
+        color: white;
     }
 
     /* 隐藏侧边栏 */
@@ -139,176 +178,96 @@ def apply_minimal_style():
     }
 
     /* 移除所有分割线和装饰 */
-    hr {
-        display: none;
-    }
+    hr { display: none; }
 
-    .streamlit-expanderHeader {
-        background: transparent;
-        border: none;
-    }
-
-    /* 极简选择框 */
-    .stSelectbox > div > div > select {
-        border: 1px solid #4A5568;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 16px;
-        background: #2D3748;
-        color: #E2E8F0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        transition: all 0.3s ease;
-    }
-
-    /* 移除所有卡片样式 */
-    .stDataFrame {
-        border: none;
-        box-shadow: none;
-    }
-
-    .stMetric {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        padding: 0;
-    }
-
-    /* 极简提示框 */
-    .stSuccess, .stError, .stWarning, .stInfo {
-        border-radius: 8px;
-        border: 1px solid #4A5568;
-        background: #2D3748;
-        color: #E2E8F0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        transition: all 0.3s ease;
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-        .main .block-container {
-            padding: 1rem 0.5rem;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 2rem;
-        }
-
-        .stButton > button {
-            font-size: 14px;
-            padding: 10px 16px;
-        }
-
-        .minimal-message {
-            padding: 12px 0;
-        }
-    }
-
-    /* 移除所有Streamlit默认装饰 */
-    .stApp > div {
-        background: transparent;
-    }
-
-    /* 聚焦状态 - 无装饰 */
-    :focus {
-        outline: none;
-    }
-
-    /* 极简文字样式 */
-    p, div, span {
-        color: #E2E8F0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.6;
-    }
-
-    /* 代码样式 */
-    code {
-        background: #2D3748;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-family: "SF Mono", Monaco, Consolas, monospace;
-        font-size: 14px;
-        color: #E2E8F0;
-        transition: all 0.3s ease;
-    }
-
-    pre {
-        background: #2D3748;
-        padding: 16px;
-        border-radius: 8px;
-        overflow-x: auto;
-        border: 1px solid #4A5568;
-        transition: all 0.3s ease;
-    }
-
-    pre code {
-        background: none;
-        padding: 0;
-    }
-
-    /* 快捷按钮 - 极简风格 */
-    .quick-actions {
+    /* 快捷选项容器 - 胶囊样式 */
+    .quick-options-container {
         display: flex;
         gap: 8px;
-        margin: 16px 0;
+        margin-bottom: 12px;
         flex-wrap: wrap;
         justify-content: center;
     }
 
-    .quick-action-btn {
-        background: #2D3748;
-        border: 1px solid #4A5568;
-        border-radius: 8px;
-        padding: 8px 16px;
-        font-size: 14px;
-        color: #E2E8F0;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .quick-action-btn:hover {
-        background: #4A5568;
-        border-color: #718096;
-    }
-
-    /* 快捷选项容器 - 固定显示在输入框下方 */
-    .quick-options-container {
-        margin: 16px 0;
-        padding: 12px;
-        background: rgba(45, 55, 72, 0.3);
-        border: 1px solid #4A5568;
-        border-radius: 8px;
-    }
-
-    .quick-options-label {
-        text-align: center;
+    /* 胶囊按钮样式 */
+    div[data-testid="stHorizontalBlock"] button {
+        background: var(--capsule-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 4px 16px;
+        font-size: 13px;
         color: #A0AEC0;
-        font-size: 12px;
-        margin-bottom: 12px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        min-height: 32px;
+        height: 32px;
+        line-height: 1;
+        transition: all 0.2s ease;
+    }
+
+    div[data-testid="stHorizontalBlock"] button:hover {
+        background: var(--capsule-hover);
+        color: white;
+        border-color: #718096;
+        transform: translateY(-1px);
+    }
+    
+    div[data-testid="stHorizontalBlock"] button:focus {
+        color: white;
+        border-color: var(--accent-color);
+        background: var(--capsule-hover);
     }
 
     /* 极简容器 */
     .minimal-container {
-        max-width: 600px;
+        max-width: 700px;
         margin: 0 auto;
-        text-align: center;
     }
 
     /* 加载状态 */
     .minimal-loading {
-        text-align: center;
-        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         color: #718096;
-        font-style: italic;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    
+    .typing-indicator span {
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        background-color: #718096;
+        border-radius: 50%;
+        animation: typing 1.4s infinite both;
+        margin: 0 1px;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% { transform: scale(0); opacity: 0.5;}
+        40% { transform: scale(1); opacity: 1;}
     }
 
     /* 修复checkbox样式 */
     .stCheckbox > div > div > label {
-        color: #E2E8F0;
+        color: #A0AEC0;
+        font-size: 13px;
+    }
+    
+    /* 底部固定输入框区域 */
+    .fixed-bottom-input {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(16, 18, 20, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 1rem 0 2rem 0;
+        border-top: 1px solid var(--border-color);
+        z-index: 999;
     }
     </style>
     """
@@ -320,8 +279,16 @@ def create_minimal_header():
     """创建极简风格的页面头部"""
 
     header_html = """
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="margin: 0; font-weight: 600;">需求澄清助手</h1>
+    <div style="text-align: center; margin-bottom: 3rem; padding-top: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1rem;">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 2C8.268 2 2 8.268 2 16C2 23.732 8.268 30 16 30C23.732 30 30 23.732 30 16C30 8.268 23.732 2 16 2Z" fill="#4E61E6"/>
+                <path d="M16 8C11.582 8 8 11.582 8 16C8 20.418 11.582 24 16 24C20.418 24 24 20.418 24 16C24 11.582 20.418 8 16 8Z" fill="#101214"/>
+                <path d="M20 14L14 20M14 14L20 20" stroke="#4E61E6" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; font-family: 'Inter', sans-serif;">agent_ask</h1>
+        </div>
+        <p style="color: #718096; font-size: 14px; margin: 0; font-family: 'Inter', sans-serif;">智能需求澄清助手</p>
     </div>
     """
 
@@ -331,75 +298,46 @@ def create_minimal_header():
 def create_minimal_input_area():
     """创建极简风格的输入区域"""
 
-    # 居中容器
-    st.markdown('<div class="minimal-container">', unsafe_allow_html=True)
+    # 底部固定容器
+    container = st.container()
+    
+    with container:
+        # 快捷选项按钮 - 胶囊样式，位于输入框上方
+        st.markdown('<div class="quick-options-container">', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1.5])
+        
+        selected_option = None
+        
+        with col1:
+            if st.button("A", key="minimal_option_A", use_container_width=True):
+                selected_option = "A"
+        
+        with col2:
+            if st.button("B", key="minimal_option_B", use_container_width=True):
+                selected_option = "B"
+        
+        with col3:
+            if st.button("C", key="minimal_option_C", use_container_width=True):
+                selected_option = "C"
+        
+        with col4:
+            if st.button("D", key="minimal_option_D", use_container_width=True):
+                selected_option = "D"
+        
+        with col5:
+            if st.button("Accept", key="minimal_option_Accept", use_container_width=True):
+                selected_option = "Accept"
+                
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # 输入框
-    user_input = st.text_area(
-        "请描述你的需求...",
-        placeholder="请详细描述你的需求，我会通过提问帮助你明确真正的需求...",
-        key="minimal_input",
-        height=120
-    )
-
-    # 主要操作按钮
-    col1, col2, col3 = st.columns([1, 1, 1])
-
-    with col1:
-        send_button = st.button(
-            "发送",
-            key="minimal_send",
-            use_container_width=True,
-            type="primary"
-        )
-
-    with col2:
-        clear_button = st.button(
-            "清空",
-            key="minimal_clear",
-            use_container_width=True
-        )
-
-    with col3:
-        history_button = st.button(
-            "历史",
-            key="minimal_history",
-            use_container_width=True
-        )
-
-    # 快捷选项按钮 - 固定显示
-    st.markdown('<div class="quick-options-container">', unsafe_allow_html=True)
-
-    # 快捷选项标题
-    st.markdown('<div class="quick-options-label">快捷选项</div>', unsafe_allow_html=True)
-
-    # 快捷选项按钮
-    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
-
-    selected_option = None
-
-    with col1:
-        if st.button("A", key="minimal_option_A", use_container_width=True):
-            selected_option = "A"
-
-    with col2:
-        if st.button("B", key="minimal_option_B", use_container_width=True):
-            selected_option = "B"
-
-    with col3:
-        if st.button("C", key="minimal_option_C", use_container_width=True):
-            selected_option = "C"
-
-    with col4:
-        if st.button("D", key="minimal_option_D", use_container_width=True):
-            selected_option = "D"
-
-    with col5:
-        if st.button("Accept", key="minimal_option_Accept", use_container_width=True):
-            selected_option = "Accept"
-
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        # 输入框
+        user_input = st.chat_input("输入您的回答或描述需求...", key="minimal_chat_input")
+        
+        # 兼容旧版返回结构
+        send_button = True if user_input else False
+        clear_button = None # chat_input 不支持外部清空按钮
+        history_button = None # 历史按钮移到侧边栏或顶部
 
     return send_button, user_input, clear_button, history_button, selected_option
 
@@ -410,20 +348,30 @@ def create_minimal_message_display():
     if "messages" not in st.session_state or not st.session_state.messages:
         return
 
-    st.markdown('<div style="max-width: 600px; margin: 0 auto;">', unsafe_allow_html=True)
+    st.markdown('<div style="max-width: 700px; margin: 0 auto; padding-bottom: 20px;">', unsafe_allow_html=True)
 
-    for i, message in enumerate(st.session_state.messages[-10:]):  # 只显示最近10条
+    for i, message in enumerate(st.session_state.messages):
         role_class = "minimal-user-message" if message["role"] == "user" else "minimal-assistant-message"
-        role_name = "您" if message["role"] == "user" else "助手"
-
-        message_html = f"""
+        avatar_class = "user-avatar" if message["role"] == "user" else "assistant-avatar"
+        avatar_text = "U" if message["role"] == "user" else "AI"
+        
+        # 内容容器
+        content_html = f"""
         <div class="minimal-message {role_class}">
-            <div class="minimal-message-role">{role_name}</div>
-            <div>{message["content"]}</div>
+            {'<div class="minimal-avatar assistant-avatar">AI</div>' if message["role"] == "assistant" else ''}
+            <div class="minimal-{message['role']}-content">
+                {message["content"]}
+            </div>
+            {'<div class="minimal-avatar user-avatar">U</div>' if message["role"] == "user" else ''}
         </div>
         """
-
-        st.markdown(message_html, unsafe_allow_html=True)
+        
+        # 使用 st.markdown 渲染内容以支持 Markdown 格式，但外层包裹 HTML
+        # 注意：这里为了支持 Markdown 渲染，我们不能直接把内容塞进 HTML 字符串
+        # 我们使用 Streamlit 的列布局来模拟
+        
+        with st.chat_message(message["role"], avatar=None):
+             st.markdown(message["content"])
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -494,7 +442,7 @@ def create_minimal_history_modal():
             st.markdown("#### 当前会话")
             for i, msg in enumerate(get_minimal_messages()[-5:]):
                 role_name = "您" if msg["role"] == "user" else "助手"
-                st.markdown(f"**{role_name}**: {msg.content[:150]}{'...' if len(msg['content']) > 150 else ''}")
+                st.markdown(f"**{role_name}**: {msg['content'][:150]}{'...' if len(msg['content']) > 150 else ''}")
 
         if st.button("关闭", key="close_history"):
             st.session_state.show_history = False
@@ -575,8 +523,18 @@ def handle_minimal_actions(clear_button, history_button):
 
 def show_minimal_loading():
     """显示极简风格的加载状态"""
-
-    st.markdown('<div class="minimal-loading">正在思考中...</div>', unsafe_allow_html=True)
+    
+    loading_html = """
+    <div class="minimal-loading">
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>agent_ask 正在思考...</span>
+    </div>
+    """
+    st.markdown(loading_html, unsafe_allow_html=True)
 
 
 def add_minimal_message(role, content):
