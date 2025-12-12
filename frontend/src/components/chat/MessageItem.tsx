@@ -11,24 +11,54 @@ interface MessageItemProps {
 
 // Parse options from message content
 function parseOptions(content: string): { mainText: string; options: string[] } {
-    // Look for **Options**: followed by bullet points
-    const optionsMatch = content.match(/\*\*Options\*\*:\s*((?:- .+\n?)+)/i);
+    // Pattern 1: Traditional bullet list format
+    const listPatterns = [
+        /\*\*Strategic Options\*\*:\s*((?:- .+\n?)+)/i,  // New format
+        /\*\*Options\*\*:\s*((?:- .+\n?)+)/i           // Legacy format
+    ];
 
-    if (optionsMatch) {
-        const optionsText = optionsMatch[1];
-        const options = optionsText
-            .split('\n')
-            .filter(line => line.trim().startsWith('-'))
-            .map(line => line.replace(/^-\s*/, '').trim())
-            .filter(Boolean);
+    // Pattern 2: Inline bold option format (**Option 1: Title**: Description)
+    const inlinePattern = /\*\*Option\s*(\d+):\s*([^*]+)\*\*[ \t]*:[ \t]*([^ \n][^\n]*?)(?=\n|$|\*\*Option\s*\d+:|$)/gi;
 
-        // Remove options section from main text
-        const mainText = content.replace(/\*\*Options\*\*:\s*(?:- .+\n?)+/i, '').trim();
+    let options: string[] = [];
+    let mainText = content;
 
-        return { mainText, options };
+    // Try to match inline options first
+    const inlineMatches = [...content.matchAll(inlinePattern)];
+    if (inlineMatches.length > 0) {
+        options = inlineMatches.map(match => {
+            const [, number, title, description] = match;
+            return `${title.trim()}: ${description.trim()}`;
+        });
+
+        // Remove inline options from main text
+        mainText = content.replace(inlinePattern, '').trim();
+    } else {
+        // Try traditional list format
+        for (const pattern of listPatterns) {
+            const optionsMatch = content.match(pattern);
+            if (optionsMatch) {
+                const optionsText = optionsMatch[1];
+                options = optionsText
+                    .split('\n')
+                    .filter(line => line.trim().startsWith('-'))
+                    .map(line => {
+                        // Remove the bullet and clean up
+                        let option = line.replace(/^-\s*/, '').trim();
+                        // Remove any leading "Option X:" format for cleaner display
+                        option = option.replace(/^Option\s*\d+:\s*/i, '');
+                        return option;
+                    })
+                    .filter(Boolean);
+
+                // Remove the matched options section from main text
+                mainText = content.replace(pattern, '').trim();
+                break;
+            }
+        }
     }
 
-    return { mainText: content, options: [] };
+    return { mainText, options };
 }
 
 export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
@@ -41,12 +71,14 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             // Remove the code block containing options if it exists
             let cleanContent = message.content;
 
-            // Regex to find the code block with options
-            // Matches ```...**Options**:...``` or just the options section
-            const optionsBlockRegex = /```[\s\S]*?\*\*Options\*\*[\s\S]*?```/i;
-            const optionsListRegex = /\*\*Options\*\*:\s*((?:- .+\n?)+)/i;
+            // Remove various option formats from main text
+            const optionsInlineRegex = /\*\*Option\s*\d+:\s*[^*]+\*\*[ \t]*:[ \t]*[^\n]*(\n(?!\*\*Option\s*\d+:)|$)/gi;
+            const optionsBlockRegex = /```[\s\S]*?\*\*(?:Strategic )?Options\*\*[\s\S]*?```/i;
+            const optionsListRegex = /\*\*(?:Strategic )?Options\*\*:\s*((?:- .+\n?)+)/i;
 
-            if (optionsBlockRegex.test(cleanContent)) {
+            if (optionsInlineRegex.test(cleanContent)) {
+                cleanContent = cleanContent.replace(optionsInlineRegex, '').trim();
+            } else if (optionsBlockRegex.test(cleanContent)) {
                 cleanContent = cleanContent.replace(optionsBlockRegex, '').trim();
             } else if (optionsListRegex.test(cleanContent)) {
                 cleanContent = cleanContent.replace(optionsListRegex, '').trim();

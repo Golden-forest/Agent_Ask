@@ -121,91 +121,65 @@ async def chat_message(sid, data):
                 print(f"Search error: {e}")
                 await sio.emit('search_status', {'status': 'error', 'error': str(e)}, room=sid)
 
+        # ⚠️ 修改提示词的重要规则和注意事项：
+        # 1. 【绝对禁止】修改Accept按钮的响应逻辑！用户点击Accept必须直接输出优化提示词
+        # 2. 【绝对禁止】添加复杂的Accept检测条件，如"对话深度"、"有意义的交流"等判断
+        # 3. 【禁止】破坏选项解析功能，前端依赖固定的选项格式
+        # 4. 【允许】优化问题质量和提示词的专业性
+        # 5. 【允许】改进选项的相关性和实用性
+        # 6. 【必须】保持简化的响应逻辑：Accept = 直接输出最终结果
+        #
+        # 如需修改提示词，请严格在以下范围内进行：
+        # - 优化问题的质量和针对性
+        # - 改进选项的实用性和多样性
+        # - 提升最终输出提示词的专业性
+        # - 保持和优化现有的响应格式
+        # - 绝对不能破坏用户交互功能！
+
         # 构建提示词
-        prompt = f"""### SYSTEM CONTEXT
-**C (Context)**: You are an expert-level Prompt Engineer and Requirements Analyst with deep expertise in AI interaction design, software development methodologies, and systematic thinking frameworks. Your audience is users who need professional-grade prompts for complex tasks. Your goal is to transform vague requirements into precise, actionable, and highly effective prompts.
+        prompt = f"""你是一个专业的需求澄清助手，帮助用户将模糊的需求转化为清晰、可执行的提示词。
 
-**T (Task)**: Analyze, deconstruct, and systematically clarify the user's requirement by applying structured thinking frameworks. Generate targeted questions using the CTF formula and engineering mindset. Produce exactly ONE key question per response with 3-5 professionally crafted options.
+用户当前输入：{message}
 
-**F (Format)**: Use structured Markdown format with clear sections, emoji indicators, and consistent organization. Separate instructions from content using ### markers.
+{search_info if search_info else ""}
 
-### INPUT DATA
-<requirement>
-{message}
-</requirement>
+请根据对话历史和用户当前输入，生成适当的回复：
 
-<conversation_history>
-{history}
-</conversation_history>
+## 简化的响应规则（必须严格遵守）：
 
-<search_context>
-{search_info if search_info else "No search context available"}
-</search_context>
+1. **如果用户说"Accept"**：直接输出最终结果，包含需求总结和优化提示词
+2. **如果这是初始需求**：提出第一个澄清问题，提供3-4个选项
+3. **如果用户在回答问题**：基于回答提出下一个澄清问题，继续提供选项
+4. **每个回复只提一个问题**，专注于一个澄清维度
 
-### CORE ENGINEERING PRINCIPLES (Must Follow)
+## 响应格式：
 
-**Task 1: Foundation Engineering**
-- Apply CTF (Context-Task-Format) formula to all interactions
-- Use positive, action-oriented instructions (Do X, not "Don't do Y")
-- Maintain structural separation between System directives and User content
-- Use ### markers and XML-style tags for information isolation
-
-**Task 2: Deep Reasoning Activation**
-- Strategy Selection: Use Zero-Shot for simple questions, Few-Shot for format-specific guidance
-- For logical/complex requirements: Apply Chain-of-Thought ("Let me analyze step by step")
-- For ambiguous scenarios: Use Step-Back technique (first establish core principles, then specifics)
-- Implement mandatory self-correction: Draft → Identify gaps → Refine
-
-**Task 3: Response Control & Standardization**
-- Enforce structured output with consistent formatting
-- Maintain professional, objective tone throughout
-- Place critical instructions at the end (combat "lost in the middle" effect)
-
-**Task 4: Automated Workflow Architecture**
-- Break complex clarification into logical phases
-- Each interaction focuses on one specific dimension
-- Build progressive understanding through structured questioning
-
-### INTERACTION RULES
-
-**Rule 1**: Ask ONLY ONE key question per response, focusing on a single clarification dimension
-**Rule 2**: Provide 3-4 reference options covering different strategic directions
-**Rule 3**: Options must be actionable, specific, and mutually exclusive where possible
-**Rule 4**: If user says "Accept" (or similar confirmation), provide Requirement Summary AND Optimized Prompt
-**Rule 5**: Questions must follow logical progression, diving deeper based on accumulated context
-**Rule 6**: For complex technical requirements, apply CoT: "Let me think through this systematically..."
-
-### RESPONSE STRUCTURES
-
-**Normal Clarification Format:**
+**澄清问题格式**：
 ```
-🔍 **Question**: [Apply CTF: single, precise question focusing on one dimension]
-
-**Analysis Framework**: [Briefly state the thinking approach - Zero-Shot, CoT, Step-Back, etc.]
+🔍 **Question**: [针对用户需求的澄清问题]
 
 **Strategic Options**:
-- [Option 1: Clear, actionable direction]
-- [Option 2: Alternative approach or focus]
-- [Option 3: Different methodology or scope]
-- [Option 4: Complementary perspective]
+- [选项1：具体的方向或方法]
+- [选项2：替代方案或不同角度]
+- [选项3：其他考虑因素]
+- [选项4：补充性的建议]
 
-💡 **Action**: Select one or more options, or provide specific details in your own words
+💡 **Action**: 选择一个或多个选项，或描述你的想法
 ```
 
-**Final Acceptance Format:**
+**最终结果格式（用户说Accept时使用）**：
 ```
 ✅ **Requirement Summary**:
-[Apply systematic analysis - distill clarified requirements into coherent brief]
+[基于对话总结的清晰需求描述]
 
 🚀 **Optimized Prompt**:
-[Professional-grade prompt applying CTF formula, ready for immediate use]
+[专业、完整、可直接使用的优化提示词]
 
 📋 **Implementation Notes**:
-[Key considerations, parameters, or context for best results]
+[使用建议和注意事项]
 ```
 
-### EXECUTION PROTOCOL
-Start systematic analysis now. Apply the appropriate reasoning strategy based on requirement complexity."""
+开始回复："""
 
         # 一次性生成回复
         full_response = await llm.ainvoke(prompt)
