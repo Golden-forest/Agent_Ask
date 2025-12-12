@@ -1,0 +1,132 @@
+/* 导入Inter字体 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-text font-sans antialiased selection:bg-primary/30 selection:text-primary;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+
+  /* 基础按钮样式 */
+  .btn {
+    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 ease-in-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primaryHover shadow-lg shadow-primary/20;
+    @apply focus:ring-primary;
+  }
+
+  .btn-secondary {
+    @apply bg-surface text-text hover:bg-surfaceHover border border-border/50;
+    @apply focus:ring-surface;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-text hover:bg-surfaceHover;
+    @apply focus:ring-surface;
+  }
+
+  /* 聊天消息样式 */
+  .message-bubble {
+    @apply max-w-4xl mx-auto p-6 rounded-2xl;
+    @apply animate-fade-in;
+  }
+
+  .message-user {
+    @apply bg-surface/50 backdrop-blur-sm text-text ml-auto border border-border/50;
+  }
+
+  .message-assistant {
+    @apply bg-transparent text-text mr-auto;
+  }
+
+  /* 输入框样式 */
+  .chat-input {
+    @apply w-full px-4 py-3 bg-surface/80 backdrop-blur-md text-text;
+    @apply border border-border rounded-2xl;
+    @apply focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary;
+    @apply placeholder-textSecondary transition-all duration-200;
+  }
+}
+
+@layer utilities {
+
+  /* 自定义滚动条 */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-surfaceHover/50 rounded-full hover:bg-surfaceHover;
+  }
+
+  /* 打字机效果 */
+  .typing-indicator {
+    @apply inline-block;
+  }
+
+  .typing-indicator::after {
+    content: '▋';
+    @apply ml-1 text-primary animate-pulse;
+  }
+
+  /* Markdown Styles */
+  .prose-invert {
+    @apply text-text/90;
+  }
+
+  .prose-invert h1,
+  .prose-invert h2,
+  .prose-invert h3 {
+    @apply text-text font-semibold tracking-tight;
+  }
+
+  .prose-invert strong {
+    @apply text-white font-semibold;
+  }
+
+  .prose-invert code {
+    @apply bg-surfaceHover px-1.5 py-0.5 rounded text-sm font-mono text-primary/90;
+  }
+
+  .prose-invert pre {
+    @apply bg-surface border border-border/50 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-words;
+  }
+
+  .prose-invert pre code {
+    @apply bg-transparent p-0 text-text/80 whitespace-pre-wrap break-words;
+  }
+
+  .prose-invert ul {
+    @apply list-disc list-outside ml-4 space-y-1;
+  }
+
+  .prose-invert ol {
+    @apply list-decimal list-outside ml-4 space-y-1;
+  }
+
+  .prose-invert blockquote {
+    @apply border-l-4 border-primary/50 pl-4 italic text-textSecondary;
+  }
+}

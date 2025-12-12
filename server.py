@@ -1,7 +1,6 @@
 """
 FastAPI后端服务
-为需求澄清助手提供RESTful API接口
-与现有Streamlit前端并行运行，不影响现有功能
+为需求澄清助手提供RESTful API接口和WebSocket实时通信
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -12,6 +11,7 @@ import os
 import asyncio
 from datetime import datetime
 from dotenv import load_dotenv
+import socketio
 
 from langchain_openai import ChatOpenAI
 from search import search_requirement_context
@@ -25,10 +25,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Socket.IO设置
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+socket_app = socketio.ASGIApp(sio, app)
+
 # CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "http://localhost:8504"],
+    allow_origins=["http://localhost:5173", "http://localhost:8501", "http://localhost:8504", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,6 +65,7 @@ llm = ChatOpenAI(
     model="deepseek-chat",
     openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
     openai_api_base=os.getenv("DEEPSEEK_BASE_URL"),
+    streaming=False
 )
 
 # 内存存储（生产环境应使用数据库）
@@ -70,14 +75,164 @@ def generate_conversation_id() -> str:
     """生成对话ID"""
     return f"conv_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+async def save_conversation(conversation_id: str, user_message: str, ai_response: str):
+    """保存对话历史"""
+    if conversation_id not in conversations:
+        conversations[conversation_id] = []
+
+    conversations[conversation_id].extend([
+        ChatMessage(role="user", content=user_message),
+        ChatMessage(role="assistant", content=ai_response)
+    ])
+
+# Socket.IO 事件处理
+@sio.event
+async def connect(sid, environ):
+    print(f"Client connected: {sid}")
+
+@sio.event
+async def disconnect(sid):
+    print(f"Client disconnected: {sid}")
+
+@sio.event
+async def chat_message(sid, data):
+    """处理聊天消息并流式返回"""
+    try:
+        message = data.get('message')
+        history_data = data.get('history', [])
+        enable_search = data.get('enable_search', True)
+        conversation_id = data.get('conversation_id') or generate_conversation_id()
+        
+        # 转换历史记录
+        history = [{"role": msg['role'], "content": msg['content']} for msg in history_data]
+        
+        # 搜索信息
+        search_info = ""
+        if (enable_search and
+            len(history) == 0 and
+            len(message) > 10 and
+            os.getenv("SERPER_API_KEY")):
+            try:
+                await sio.emit('search_status', {'status': 'searching'}, room=sid)
+                # 在线程池中运行同步搜索函数
+                search_info = await asyncio.to_thread(search_requirement_context, message)
+                await sio.emit('search_status', {'status': 'completed', 'info': search_info}, room=sid)
+            except Exception as e:
+                print(f"Search error: {e}")
+                await sio.emit('search_status', {'status': 'error', 'error': str(e)}, room=sid)
+
+        # 构建提示词
+        prompt = f"""### SYSTEM CONTEXT
+**C (Context)**: You are an expert-level Prompt Engineer and Requirements Analyst with deep expertise in AI interaction design, software development methodologies, and systematic thinking frameworks. Your audience is users who need professional-grade prompts for complex tasks. Your goal is to transform vague requirements into precise, actionable, and highly effective prompts.
+
+**T (Task)**: Analyze, deconstruct, and systematically clarify the user's requirement by applying structured thinking frameworks. Generate targeted questions using the CTF formula and engineering mindset. Produce exactly ONE key question per response with 3-5 professionally crafted options.
+
+**F (Format)**: Use structured Markdown format with clear sections, emoji indicators, and consistent organization. Separate instructions from content using ### markers.
+
+### INPUT DATA
+<requirement>
+{message}
+</requirement>
+
+<conversation_history>
+{history}
+</conversation_history>
+
+<search_context>
+{search_info if search_info else "No search context available"}
+</search_context>
+
+### CORE ENGINEERING PRINCIPLES (Must Follow)
+
+**Task 1: Foundation Engineering**
+- Apply CTF (Context-Task-Format) formula to all interactions
+- Use positive, action-oriented instructions (Do X, not "Don't do Y")
+- Maintain structural separation between System directives and User content
+- Use ### markers and XML-style tags for information isolation
+
+**Task 2: Deep Reasoning Activation**
+- Strategy Selection: Use Zero-Shot for simple questions, Few-Shot for format-specific guidance
+- For logical/complex requirements: Apply Chain-of-Thought ("Let me analyze step by step")
+- For ambiguous scenarios: Use Step-Back technique (first establish core principles, then specifics)
+- Implement mandatory self-correction: Draft → Identify gaps → Refine
+
+**Task 3: Response Control & Standardization**
+- Enforce structured output with consistent formatting
+- Maintain professional, objective tone throughout
+- Place critical instructions at the end (combat "lost in the middle" effect)
+
+**Task 4: Automated Workflow Architecture**
+- Break complex clarification into logical phases
+- Each interaction focuses on one specific dimension
+- Build progressive understanding through structured questioning
+
+### INTERACTION RULES
+
+**Rule 1**: Ask ONLY ONE key question per response, focusing on a single clarification dimension
+**Rule 2**: Provide 3-4 reference options covering different strategic directions
+**Rule 3**: Options must be actionable, specific, and mutually exclusive where possible
+**Rule 4**: If user says "Accept" (or similar confirmation), provide Requirement Summary AND Optimized Prompt
+**Rule 5**: Questions must follow logical progression, diving deeper based on accumulated context
+**Rule 6**: For complex technical requirements, apply CoT: "Let me think through this systematically..."
+
+### RESPONSE STRUCTURES
+
+**Normal Clarification Format:**
+```
+🔍 **Question**: [Apply CTF: single, precise question focusing on one dimension]
+
+**Analysis Framework**: [Briefly state the thinking approach - Zero-Shot, CoT, Step-Back, etc.]
+
+**Strategic Options**:
+- [Option 1: Clear, actionable direction]
+- [Option 2: Alternative approach or focus]
+- [Option 3: Different methodology or scope]
+- [Option 4: Complementary perspective]
+
+💡 **Action**: Select one or more options, or provide specific details in your own words
+```
+
+**Final Acceptance Format:**
+```
+✅ **Requirement Summary**:
+[Apply systematic analysis - distill clarified requirements into coherent brief]
+
+🚀 **Optimized Prompt**:
+[Professional-grade prompt applying CTF formula, ready for immediate use]
+
+📋 **Implementation Notes**:
+[Key considerations, parameters, or context for best results]
+```
+
+### EXECUTION PROTOCOL
+Start systematic analysis now. Apply the appropriate reasoning strategy based on requirement complexity."""
+
+        # 一次性生成回复
+        full_response = await llm.ainvoke(prompt)
+
+        # 发送完成事件
+        await sio.emit('stream_complete', {
+            'full_content': full_response.content,
+            'conversation_id': conversation_id,
+            'search_info': search_info
+        }, room=sid)
+        
+        # 保存对话
+        await save_conversation(conversation_id, message, full_response.content)
+        
+    except Exception as e:
+        print(f"Error in chat_message: {e}")
+        await sio.emit('error', {'message': str(e)}, room=sid)
+
+# REST API 路由
 @app.get("/")
 async def root():
     """根路径"""
     return {
-        "message": "需求澄清助手API服务运行中",
+        "message": "需求澄清助手API服务运行中 (支持WebSocket)",
         "version": "1.0.0",
         "endpoints": {
-            "chat": "/chat - 对话接口",
+            "chat": "/chat - 对话接口 (REST)",
             "analyze": "/analyze - 需求分析",
             "health": "/health - 健康检查"
         }
@@ -91,13 +246,14 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "services": {
             "llm": "connected" if os.getenv("DEEPSEEK_API_KEY") else "disconnected",
-            "search": "enabled" if os.getenv("SERPER_API_KEY") else "disabled"
+            "search": "enabled" if os.getenv("SERPER_API_KEY") else "disabled",
+            "websocket": "enabled"
         }
     }
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
-    """对话接口"""
+    """对话接口 (REST兼容)"""
     try:
         conversation_id = generate_conversation_id()
 
@@ -116,18 +272,43 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
                 search_info = f"搜索时出现错误：{str(e)}"
 
         # 构建提示词
-        prompt = f"""你是一个需求澄清助手。根据用户需求和对话历史，提出有针对性的澄清问题。
+        prompt = f"""You are a professional requirement clarification assistant. Help users clarify their needs through targeted questions, ultimately outputting an optimized prompt.
 
-用户当前输入：{request.message}
-
+User requirement: {request.message}
+Conversation history: {history}
 {search_info if search_info else ""}
 
-请根据对话历史和用户当前输入，生成适当的回复。
-- 如果这是初始需求，请提出第一个澄清问题
-- 如果用户在回答问题，请基于回答提出下一个问题
-- 如果用户说"Accept"，请生成完整的需求分析报告
+Follow these rules strictly:
 
-开始回复："""
+**Rule 1:** Ask ONLY ONE key question at a time to help clarify specific needs
+**Rule 2:** Provide 3-5 reference options after each question for users to choose from (they can select multiple or provide their own answer)
+**Rule 3:** Options should cover different possible directions
+**Rule 4:** If user says "Accept" (or similar confirmation), DO NOT ask more questions. Instead, output a "Requirement Summary" and the "Optimized Prompt".
+**Rule 5:** Questions should be progressive, diving deeper based on user's answers
+
+Response format (Normal):
+```
+🔍 **Question**: [Your question here]
+
+**Options**:
+- [Option 1 text]
+- [Option 2 text]
+- [Option 3 text]
+- [Option 4 text]
+
+💡 You can select one or more options above, or describe in your own words
+```
+
+Response format (When user says "Accept"):
+```
+✅ **Requirement Summary**:
+[Brief summary of the clarified requirements]
+
+🚀 **Optimized Prompt**:
+[The final, detailed prompt that the user can use]
+```
+
+Start analysis:"""
 
         # 获取AI回复
         response = llm.invoke(prompt)
@@ -149,16 +330,6 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-async def save_conversation(conversation_id: str, user_message: str, ai_response: str):
-    """保存对话历史"""
-    if conversation_id not in conversations:
-        conversations[conversation_id] = []
-
-    conversations[conversation_id].extend([
-        ChatMessage(role="user", content=user_message),
-        ChatMessage(role="assistant", content=ai_response)
-    ])
 
 @app.get("/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str):
@@ -184,26 +355,47 @@ async def analyze_requirement(request: ChatRequest):
                 search_info = f"搜索时出现错误：{str(e)}"
 
         # 构建分析提示
-        prompt = f"""请对以下用户需求进行深度分析：
+        prompt = f"""请对以下用户需求进行深度分析，生成优化后的提示词：
 
-用户需求：{request.message}
+用户原始需求：{request.message}
 
 {search_info if search_info else ""}
 
-请提供：
-1. 优化后的需求描述（更清晰、具体、完整）
-2. 关键问题列表（每个问题包含问题和建议答案）
-3. 实现建议列表
+基于用户需求，生成一个完整、清晰、具体的优化提示词。这个提示词应该：
 
-请以JSON格式返回结果：
-{{
-    "optimized_requirement": "优化后的需求描述",
-    "key_questions": [
-        {{"question": "问题1", "suggested_answer": "建议答案1"}},
-        {{"question": "问题2", "suggested_answer": "建议答案2"}}
-    ],
-    "suggestions": ["建议1", "建议2", "建议3"]
-}}"""
+1. **明确目标**：清楚说明要达成的目标
+2. **具体要求**：列出详细的功能和特性要求
+3. **技术规范**：包含技术栈、架构、性能要求等
+4. **用户体验**：描述界面设计、交互流程等
+5. **边界条件**：明确包含和不包含的内容
+
+请输出一个完整的优化提示词，格式如下：
+
+```
+## 优化提示词
+
+**目标**：[明确的项目目标]
+
+**核心功能**：
+- 功能1：[详细描述]
+- 功能2：[详细描述]
+- 功能3：[详细描述]
+
+**技术要求**：
+- 技术栈：[具体技术要求]
+- 架构：[架构设计要求]
+- 性能：[性能指标要求]
+
+**用户体验**：
+- 界面设计：[UI/UX要求]
+- 交互流程：[用户操作流程]
+- 响应式：[设备兼容性要求]
+
+**其他要求**：
+- [其他重要约束和条件]
+```
+
+请生成优化提示词："""
 
         response = llm.invoke(prompt)
 
@@ -247,7 +439,7 @@ if __name__ == "__main__":
 
     # 启动API服务器
     uvicorn.run(
-        "server:app",
+        "server:socket_app",  # 使用socket_app而不是app
         host="127.0.0.1",
         port=8000,
         reload=True,
