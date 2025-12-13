@@ -26,6 +26,9 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        'pulse-dot-1': 'pulseDot 1.4s infinite ease-in-out 0s',
+        'pulse-dot-2': 'pulseDot 1.4s infinite ease-in-out 0.2s',
+        'pulse-dot-3': 'pulseDot 1.4s infinite ease-in-out 0.4s',
       },
       keyframes: {
         fadeIn: {
@@ -35,6 +38,16 @@ export default {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        pulseDot: {
+          '0%, 80%, 100%': {
+            opacity: '0.3',
+            transform: 'scale(1)'
+          },
+          '40%': {
+            opacity: '1',
+            transform: 'scale(1.2)'
+          }
         },
       },
     },

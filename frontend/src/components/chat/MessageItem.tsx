@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { ChatMessage } from '../../types';
-import { Bot, Copy, Check } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { OptionChip } from './OptionChip';
 import { useChatStore } from '../../store/chatStore';
 
@@ -122,8 +122,8 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                 {!isUser && (
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primaryHover flex items-center justify-center shadow-lg shadow-primary/20">
-                                <Bot className="w-5 h-5 text-white" />
+                            <div className="w-8 h-8 rounded-lg bg-surface/50 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg shadow-primary/20">
+                                <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-6 h-6 rounded-md" />
                             </div>
                             <span className="font-semibold text-sm tracking-wide text-text/90">agent_ask</span>
                         </div>

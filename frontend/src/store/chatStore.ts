@@ -5,13 +5,16 @@ import { socketService } from '../services/socket';
 interface ChatStore {
     messages: ChatMessage[];
     isLoading: boolean;
+    isSearching: boolean;
     input: string;
     currentConversationId: string | null;
     selectedOptions: string[];
     setInput: (input: string) => void;
     addMessage: (message: ChatMessage) => void;
     setLoading: (loading: boolean) => void;
+    setSearching: (searching: boolean) => void;
     clearChat: () => void;
+    newConversation: () => void;
     sendMessage: (content: string) => Promise<void>;
     handleQuickAction: (action: QuickActionType) => Promise<void>;
     initSocket: () => void;
@@ -29,6 +32,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
     ],
     isLoading: false,
+    isSearching: false,
     input: '',
     currentConversationId: null,
     selectedOptions: [],
@@ -39,7 +43,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     setLoading: (loading) => set({ isLoading: loading }),
 
+    setSearching: (searching) => set({ isSearching: searching }),
+
     clearChat: () => set({ messages: [], currentConversationId: null }),
+
+    newConversation: () => set({
+        messages: [
+            {
+                id: 'welcome',
+                role: 'assistant',
+                content: 'Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details.',
+                timestamp: new Date(),
+            }
+        ],
+        currentConversationId: null,
+        selectedOptions: [],
+        input: '',
+        isLoading: false,
+        isSearching: false
+    }),
 
     initSocket: () => {
         socketService.connect();
@@ -132,22 +154,30 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
 
         socketService.on('search_status', (data: { status: 'searching' | 'completed' | 'error'; info?: string; error?: string }) => {
-            // Optional: Handle search status updates in UI
+            const { setSearching } = get();
+            if (data.status === 'searching') {
+                setSearching(true);
+            } else {
+                setSearching(false);
+            }
             console.log('Search status:', data);
         });
 
         socketService.on('error', (data: { message: string }) => {
             console.error('Socket error:', data);
-            set({ isLoading: false });
+            set({ isLoading: false, isSearching: false });
         });
     },
 
     sendMessage: async (content) => {
-        const { addMessage, setLoading, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions } = get();
+        const { addMessage, setLoading, setSearching, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions } = get();
         if (!content.trim() && selectedOptions.length === 0) return;
 
         // Ensure socket is connected
         initSocket();
+
+        // Reset states when sending new message
+        set({ isSearching: false });
 
         // Build full message with selected options
         const fullMessage = selectedOptions.length > 0

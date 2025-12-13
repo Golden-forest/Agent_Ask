@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { MessageItem } from './MessageItem';
 import { ChatInput } from './ChatInput';
+import { LoadingIndicator } from './LoadingIndicator';
 
 export const ChatInterface: React.FC = () => {
-    const { messages } = useChatStore();
+    const { messages, isLoading, isSearching } = useChatStore();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -13,7 +14,7 @@ export const ChatInterface: React.FC = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
     return (
         <div className="flex flex-col h-full max-w-5xl mx-auto px-4 pt-24 pb-6">
@@ -29,9 +30,16 @@ export const ChatInterface: React.FC = () => {
                         <p>Start a new conversation...</p>
                     </div>
                 ) : (
-                    messages.map((msg) => (
-                        <MessageItem key={msg.id} message={msg} />
-                    ))
+                    <>
+                        {messages.map((msg) => (
+                            <MessageItem key={msg.id} message={msg} />
+                        ))}
+
+                        {/* Loading indicator */}
+                        {isLoading && (
+                            <LoadingIndicator isSearching={isSearching} />
+                        )}
+                    </>
                 )}
                 <div ref={messagesEndRef} />
             </div>
