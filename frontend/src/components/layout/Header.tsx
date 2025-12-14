@@ -15,9 +15,13 @@ export const Header: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-surface/50 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg shadow-primary/20">
                     <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-7 h-7 rounded-md" />
                 </div>
-                <h1 className="text-lg font-semibold text-text tracking-tight">
-                    agent_ask
-                </h1>
+                <div>
+                    <p className="text-lg font-semibold tracking-tight">
+                        <span className="text-emerald-500">Ask Smarter</span>
+                        <span className="text-textSecondary mx-1.5">•</span>
+                        <span className="text-cyan-500">Create Faster</span>
+                    </p>
+                </div>
             </div>
 
             <div className="flex items-center gap-4">
@@ -29,7 +33,7 @@ export const Header: React.FC = () => {
                     <Plus className="w-4 h-4" />
                 </button>
                 <div className="text-xs text-textSecondary px-3 py-1 rounded-full bg-surface border border-border/50">
-                    v0.3.0 Beta
+                    v1.0.0
                 </div>
             </div>
         </header>

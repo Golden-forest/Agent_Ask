@@ -1,7 +1,0 @@
-uid=3_0 RootWebArea "Vercel Security Checkpoint" url="https://svgrepo.com/"
-  uid=3_1 main
-    uid=3_2 StaticText "我们正在验证您的浏览器"
-  uid=3_3 contentinfo
-    uid=3_4 StaticText "Vercel 安全检查点"
-    uid=3_5 StaticText "|"
-    uid=3_6 StaticText "sfo1::1763799743-72zUELdJmxw8HSKhz9wmwZomYDgqlhz1"
