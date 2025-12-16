@@ -1,0 +1,38 @@
+{
+  "current_version": "v20251216_132623",
+  "versions": {
+    "v20251216_132623": {
+      "version": "v20251216_132623",
+      "timestamp": "2025-12-16T13:26:23.081370",
+      "description": "测试备份",
+      "files_backed_up": [
+        "config.json",
+        "version_log.json",
+        "enhancements/google_technical_scenarios.md",
+        "enhancements/openai_structured_output.md",
+        "enhancements/claude_analytical_depth.md",
+        "base/websocket_chat_backup.md",
+        "base/analysis_backup.md",
+        "base/rest_chat_backup.md"
+      ],
+      "git_commit": "0225e022b6c5aa69aee60b1aec7205058dbb5efe"
+    },
+    "v20251216_132641": {
+      "version": "v20251216_132641",
+      "timestamp": "2025-12-16T13:26:41.920858",
+      "description": "测试备份",
+      "files_backed_up": [
+        "config.json",
+        "version_log.json",
+        "enhancements/google_technical_scenarios.md",
+        "enhancements/openai_structured_output.md",
+        "enhancements/claude_analytical_depth.md",
+        "base/websocket_chat_backup.md",
+        "base/analysis_backup.md",
+        "base/rest_chat_backup.md"
+      ],
+      "git_commit": "0225e022b6c5aa69aee60b1aec7205058dbb5efe"
+    }
+  },
+  "last_backup": "2025-12-16T13:26:41.927906"
+}

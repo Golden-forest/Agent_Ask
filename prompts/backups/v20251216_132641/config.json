@@ -1,0 +1,98 @@
+{
+  "version": "1.0.0",
+  "config_updated_at": "2025-01-16T10:00:00Z",
+  "enhancements_enabled": true,
+  "fallback_strategy": "conservative",
+  "default_enhancement_priority": 50,
+  "max_concurrent_enhancements": 3,
+  "loading_timeout_ms": 2000,
+
+  "enhancements": {
+    "google_technical_scenarios": {
+      "enabled": true,
+      "priority": 80,
+      "user_disabled": false,
+      "auto_disabled": false,
+      "usage_count": 0,
+      "error_count": 0,
+      "last_used": null,
+      "file_path": "enhancements/google_technical_scenarios.md",
+      "version": "1.0.0"
+    },
+    "claude_analytical_depth": {
+      "enabled": true,
+      "priority": 75,
+      "user_disabled": false,
+      "auto_disabled": false,
+      "usage_count": 0,
+      "error_count": 0,
+      "last_used": null,
+      "file_path": "enhancements/claude_analytical_depth.md",
+      "version": "1.0.0"
+    },
+    "openai_structured_output": {
+      "enabled": true,
+      "priority": 70,
+      "user_disabled": false,
+      "auto_disabled": false,
+      "usage_count": 0,
+      "error_count": 0,
+      "last_used": null,
+      "file_path": "enhancements/openai_structured_output.md",
+      "version": "1.0.0"
+    }
+  },
+
+  "base_prompts": {
+    "websocket_chat": {
+      "file_path": "base/websocket_chat_backup.md",
+      "protected": true,
+      "version": "1.0.0"
+    },
+    "rest_chat": {
+      "file_path": "base/rest_chat_backup.md",
+      "protected": true,
+      "version": "1.0.0"
+    },
+    "analysis": {
+      "file_path": "base/analysis_backup.md",
+      "protected": true,
+      "version": "1.0.0"
+    }
+  },
+
+  "security": {
+    "allow_core_logic_modification": false,
+    "allow_format_modification": false,
+    "require_permission_checks": true,
+    "max_enhancement_size_kb": 10,
+    "allowed_file_extensions": [".md"],
+    "validate_yaml_frontmatter": true
+  },
+
+  "monitoring": {
+    "log_usage": true,
+    "log_errors": true,
+    "track_performance": false,
+    "auto_disable_on_errors": true,
+    "error_threshold": 5,
+    "performance_threshold_ms": 1000,
+    "log_retention_days": 30
+  },
+
+  "version_control": {
+    "enabled": true,
+    "backup_on_change": true,
+    "max_backups": 10,
+    "backup_directory": "backups",
+    "git_integration": true,
+    "auto_commit_changes": false
+  },
+
+  "user_preferences": {
+    "default_enhancement_mode": "auto",
+    "show_enhancement_status": false,
+    "allow_enhancement_override": true,
+    "preferred_enhancements": []
+  }
+}
