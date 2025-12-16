@@ -15,8 +15,6 @@ import socketio
 
 from langchain_openai import ChatOpenAI
 from search import search_requirement_context
-from prompts.enhancement_manager import get_enhancement_manager
-from prompts.version_manager import get_version_manager
 
 load_dotenv()
 
@@ -49,9 +47,6 @@ class ChatRequest(BaseModel):
     message: str
     conversation_history: List[ChatMessage] = []
     enable_search: bool = True
-    enable_enhancements: bool = True
-    allowed_enhancements: List[str] = []
-    disabled_enhancements: List[str] = []
 
 class ChatResponse(BaseModel):
     response: str
@@ -72,12 +67,6 @@ llm = ChatOpenAI(
     openai_api_base=os.getenv("DEEPSEEK_BASE_URL"),
     streaming=False
 )
-
-# 增强提示词管理器
-enhancement_manager = get_enhancement_manager()
-
-# 版本管理器
-version_manager = get_version_manager()
 
 # 内存存储（生产环境应使用数据库）
 conversations: Dict[str, List[ChatMessage]] = {}
@@ -112,9 +101,6 @@ async def chat_message(sid, data):
         message = data.get('message')
         history_data = data.get('history', [])
         enable_search = data.get('enable_search', True)
-        enable_enhancements = data.get('enable_enhancements', True)
-        allowed_enhancements = data.get('allowed_enhancements', [])
-        disabled_enhancements = data.get('disabled_enhancements', [])
         conversation_id = data.get('conversation_id') or generate_conversation_id()
         
         # 转换历史记录
@@ -150,8 +136,8 @@ async def chat_message(sid, data):
         # - 保持和优化现有的响应格式
         # - 绝对不能破坏用户交互功能！
 
-        # 构建基础提示词
-        base_prompt_content = f"""你是一个专业的需求澄清助手，帮助用户将模糊的需求转化为清晰、可执行的提示词。
+        # 构建提示词
+        prompt = f"""你是一个专业的需求澄清助手，帮助用户将模糊的需求转化为清晰、可执行的提示词。
 
 ## 最重要规则：Accept检测（最高优先级）
 
@@ -200,24 +186,6 @@ async def chat_message(sid, data):
 ```
 
 开始回复："""
-
-        # 应用增强提示词
-        prompt = base_prompt_content
-        used_enhancements = []
-
-        if enable_enhancements:
-            try:
-                enhanced_prompt, used_enhancements = enhancement_manager.get_merged_prompt(
-                    base_prompt_name="websocket_chat",
-                    user_input=message,
-                    allowed_enhancements=allowed_enhancements,
-                    disabled_enhancements=disabled_enhancements
-                )
-                prompt = enhanced_prompt
-                print(f"已使用增强提示词: {used_enhancements}")
-            except Exception as e:
-                print(f"增强提示词加载失败，使用基础提示词: {e}")
-                prompt = base_prompt_content
 
         # 一次性生成回复
         full_response = await llm.ainvoke(prompt)
@@ -283,8 +251,8 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
             except Exception as e:
                 search_info = f"搜索时出现错误：{str(e)}"
 
-        # 构建基础提示词
-        base_prompt_content = f"""You are a professional requirement clarification assistant. Help users clarify their needs through targeted questions, ultimately outputting an optimized prompt.
+        # 构建提示词
+        prompt = f"""You are a professional requirement clarification assistant. Help users clarify their needs through targeted questions, ultimately outputting an optimized prompt.
 
 User requirement: {request.message}
 Conversation history: {history}
@@ -320,25 +288,7 @@ Response format (When user says "Accept"):
 [The final, detailed prompt that the user can use]
 ```
 
-Start analysis:""""
-
-        # 应用增强提示词
-        prompt = base_prompt_content
-        used_enhancements = []
-
-        if request.enable_enhancements:
-            try:
-                enhanced_prompt, used_enhancements = enhancement_manager.get_merged_prompt(
-                    base_prompt_name="rest_chat",
-                    user_input=request.message,
-                    allowed_enhancements=request.allowed_enhancements,
-                    disabled_enhancements=request.disabled_enhancements
-                )
-                prompt = enhanced_prompt
-                print(f"REST API已使用增强提示词: {used_enhancements}")
-            except Exception as e:
-                print(f"REST API增强提示词加载失败，使用基础提示词: {e}")
-                prompt = base_prompt_content
+Start analysis:"""
 
         # 获取AI回复
         response = llm.invoke(prompt)
@@ -463,136 +413,6 @@ async def get_stats():
         "average_messages_per_conversation": total_messages / total_conversations if total_conversations > 0 else 0,
         "active_conversations": len([conv for conv in conversations.values() if len(conv) > 0])
     }
-
-# ====== 增强提示词管理 API ======
-
-@app.get("/enhancements")
-async def list_enhancements():
-    """列出所有可用的增强功能"""
-    try:
-        enhancements = enhancement_manager.list_enhancements()
-        return {
-            "enhancements": enhancements,
-            "total_count": len(enhancements),
-            "enhancements_enabled": enhancement_manager.config.get("enhancements_enabled", True)
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/enhancements/{enhancement_name}/disable")
-async def disable_enhancement(enhancement_name: str):
-    """禁用特定增强功能"""
-    try:
-        if enhancement_name in enhancement_manager.config["enhancements"]:
-            enhancement_manager.config["enhancements"][enhancement_name]["user_disabled"] = True
-            enhancement_manager.save_config()
-            return {"message": f"增强功能 {enhancement_name} 已禁用"}
-        else:
-            raise HTTPException(status_code=404, detail="增强功能不存在")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/enhancements/{enhancement_name}/enable")
-async def enable_enhancement(enhancement_name: str):
-    """启用特定增强功能"""
-    try:
-        if enhancement_name in enhancement_manager.config["enhancements"]:
-            enhancement_manager.config["enhancements"][enhancement_name]["user_disabled"] = False
-            enhancement_manager.config["enhancements"][enhancement_name]["auto_disabled"] = False
-            enhancement_manager.save_config()
-            return {"message": f"增强功能 {enhancement_name} 已启用"}
-        else:
-            raise HTTPException(status_code=404, detail="增强功能不存在")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/enhancements/reload")
-async def reload_enhancements():
-    """重新加载所有增强提示词"""
-    try:
-        enhancement_manager.reload_enhancements()
-        return {"message": "增强提示词已重新加载"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ====== 版本管理 API ======
-
-@app.get("/versions")
-async def list_versions():
-    """列出所有版本备份"""
-    try:
-        backups = version_manager.list_backups()
-        current_version = version_manager.get_current_version()
-        return {
-            "backups": backups,
-            "current_version": current_version,
-            "total_backups": len(backups)
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/versions/backup")
-async def create_backup(description: str = ""):
-    """创建新的版本备份"""
-    try:
-        version = version_manager.create_backup(description)
-        return {
-            "message": "备份创建成功",
-            "version": version,
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/versions/{version}/restore")
-async def restore_version(version: str):
-    """恢复到指定版本"""
-    try:
-        success = version_manager.restore_backup(version)
-        if success:
-            # 重新加载增强管理器
-            enhancement_manager.reload_enhancements()
-            return {
-                "message": f"成功恢复到版本 {version}",
-                "version": version
-            }
-        else:
-            raise HTTPException(status_code=400, detail="恢复失败")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.delete("/versions/{version}")
-async def delete_version(version: str):
-    """删除指定版本备份"""
-    try:
-        success = version_manager.delete_backup(version)
-        if success:
-            return {"message": f"版本 {version} 删除成功"}
-        else:
-            raise HTTPException(status_code=400, detail="删除失败")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/versions/{version}")
-async def get_version_info(version: str):
-    """获取指定版本的详细信息"""
-    try:
-        version_info = version_manager.get_version_info(version)
-        if version_info:
-            return version_info
-        else:
-            raise HTTPException(status_code=404, detail="版本不存在")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/versions/cleanup")
-async def cleanup_old_versions(keep_count: int = 10):
-    """清理旧版本，保留最近的N个备份"""
-    try:
-        version_manager.cleanup_old_backups(keep_count)
-        return {"message": f"清理完成，保留了最近的 {keep_count} 个备份"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,0 +1,19 @@
+uid=4_0 RootWebArea "agent_ask" url="http://localhost:5174/"
+  uid=4_1 banner
+    uid=4_2 image "agent_ask" url="http://localhost:5174/Agent_ask_icon.png"
+    uid=4_3 StaticText "Ask Smarter"
+    uid=4_4 StaticText "•"
+    uid=4_5 StaticText "Create Faster"
+    uid=4_6 button "New Conversation"
+    uid=4_7 StaticText "v1.0.0"
+  uid=4_8 main
+    uid=4_9 image "agent_ask" url="http://localhost:5174/Agent_ask_icon.png"
+    uid=4_10 StaticText "agent_ask"
+    uid=4_11 StaticText "Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details."
+    uid=4_12 StaticText "我想创建一个智能客服系统，能够回答用户关于产品的问题"
+    uid=4_13 image "Agent Ask" url="http://localhost:5174/Agent_ask_icon.png"
+    uid=4_14 StaticText "Agent is responding..."
+    uid=4_15 textbox "Type your requirements, or select options above..." disableable disabled multiline
+    uid=4_16 button "Accept" description="Accept & Generate Prompt" disableable disabled
+    uid=4_17 button disableable disabled
+    uid=4_18 StaticText "Press Enter to send, Shift + Enter for new line"
