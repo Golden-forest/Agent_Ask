@@ -1,71 +1,89 @@
 # Agent_Ask
 
-> AI-powered Requirement Clarification Assistant with Minimalist Design
+> A minimalist AI-powered requirements clarification assistant (React migration in progress)
 
 ---
 
 ## 🎯 Project Overview
 
-Agent_Ask is an AI-powered assistant based on DeepSeek that helps users clarify and optimize requirements through structured questioning. The project adopts a minimalist design philosophy, focusing on core functionality with a clean, distraction-free interface.
+Agent_Ask is an AI assistant powered by DeepSeek that helps users clarify and refine requirements through structured questioning. The project adopts a minimalist design philosophy, focusing on core functionality with a clean, no-decoration interface.
 
 ---
 
 ## ✨ Current Status
 
-**v0.3.0** - React Migration in Progress
-- ✅ React + TypeScript + Vite scaffold completed
+**v0.3.0** - React Architecture Migration Version
+- ✅ React + TypeScript + Vite scaffolding completed
 - ✅ TailwindCSS configured (DeepSeek style)
 - ✅ Core dependencies installed (zustand, react-query, socket.io, etc.)
 - 🔄 Backend CORS configuration in progress
 - ⏳ Chat component development pending
-- ✅ Project structure simplified, enhancement system removed
+- ✅ Project structure simplified, enhanced prompt system removed
 
 ---
 
 ## 🚀 Quick Start
 
-### Backend Setup
+### One-Click Setup (Recommended)
 
 ```bash
-# Navigate to project directory
+# 1. Navigate to project directory
 cd /Users/hl/Projects/Agent/agent_ask
 
-# Activate virtual environment
-source venv/bin/activate
+# 2. Run auto-configuration script
+chmod +x setup_env.sh
+./setup_env.sh
 
-# Install dependencies
-pip install -r requirements.txt
+# 3. Configure API keys
+# Edit .env file, add your DeepSeek API key
+# DEEPSEEK_API_KEY=sk-xxxxxxxx
 
-# Start backend server
-python server.py
+# 4. Start application
+./start.sh
 ```
 
-### Frontend Setup
+### Manual Setup
+
+<details>
+<summary>Click to expand manual setup steps</summary>
 
 ```bash
-# Navigate to frontend directory
-cd frontend
+# 1. Navigate to project directory
+cd /Users/hl/Projects/Agent/agent_ask
 
-# Install dependencies (first time only)
-npm install
+# 2. Create virtual environment
+python -m venv venv
 
-# Start development server
-npm run dev
+# 3. Activate virtual environment
+source venv/bin/activate
+
+# 4. Install dependencies
+pip install -r requirements.txt
+
+# 5. Configure environment variables
+cp .env.example .env
+# Edit .env file, add your API keys
+
+# 6. Start application
+./start.sh
 ```
 
-### Access Points
-- **Frontend**: http://localhost:5173/ (React development server)
-- **Backend API**: http://localhost:8000/ (FastAPI server)
+</details>
+
+### Access Addresses
+- **Default Port**: 8501
+- **Auto Port Detection**: If 8501 is occupied, automatically tries 8502, 8503...
+
 
 ---
 
-## 💡 Usage Workflow
+## 💡 Usage Flow
 
-1. **Describe Requirement** - Input your initial idea or requirement
-2. **AI Questioning** - AI asks targeted clarification questions (A/B/C/D options)
+1. **Describe Requirements** - Input your initial ideas or requirements
+2. **AI Questions** - AI asks targeted clarification questions (A/B/C/D options)
 3. **Select Response** - Choose preset options or provide custom answers
-4. **Multi-turn Dialogue** - Continue conversation until requirements are clear
-5. **Complete Analysis** - Input "Accept" to get comprehensive requirement analysis report
+4. **Multi-round Dialogue** - Continue conversation until requirements are clear
+5. **Complete Analysis** - Input "Accept" to get complete requirements analysis report
 
 ---
 
@@ -76,7 +94,7 @@ npm run dev
 - **API Framework**: FastAPI 0.121.0
 - **LLM Service**: DeepSeek (via langchain-openai)
 - **Database**: SQLAlchemy 2.0.44
-- **Search Functionality**: Serper API integration
+- **Search Functionality**: Serper API Integration
 - **Python Version**: 3.9.6
 
 ### Frontend Technology Stack
@@ -87,10 +105,10 @@ npm run dev
 - **Routing**: React Router v6 ✅ Installed
 
 ### Design Features
-- **Minimalist**: Clean text interface, no decorative elements
-- **Fixed Layout**: A/B/C/D/Accept buttons always visible
-- **Responsive Design**: Adapts to desktop, tablet, and mobile devices
-- **Dark Theme**: DeepSeek-inspired color scheme
+- **Minimalism**: Pure text interface, no decorative elements
+- **Fixed Layout**: A/B/C/D/Accept buttons always displayed
+- **Responsive Design**: Adapts to desktop, tablet, mobile devices
+- **Dark Theme**: Focus on content, reduce distractions
 
 ---
 
@@ -99,18 +117,18 @@ npm run dev
 ```
 agent_ask/
 ├── Backend Files (Root Directory)
-│   ├── server.py           # FastAPI server (CORS needed)
+│   ├── server.py           # FastAPI server (CORS to be added)
 │   ├── database.py         # Database module
 │   ├── config.py          # Configuration management
 │   ├── search.py          # Search module
 │   ├── requirements.txt   # Python dependencies
-│   ├── .env               # Environment variables (NOT in git)
+│   ├── .env               # Environment variables configuration
 │   ├── chat.db            # SQLite database
 │   └── venv/              # Python virtual environment
 ├── frontend/              # React frontend ✅ Created
 │   ├── src/
 │   │   ├── index.css     # TailwindCSS styles ✅ Configured
-│   │   ├── App.tsx       # Main application component (pending)
+│   │   ├── App.tsx       # Main application component (to be developed)
 │   │   └── main.tsx      # Application entry point
 │   ├── public/           # Static assets
 │   ├── node_modules/     # npm dependencies
@@ -121,40 +139,40 @@ agent_ask/
 │   └── tsconfig.json      # TypeScript configuration
 ├── Documentation Files
 │   ├── README.md          # Project documentation
-│   ├── PROJECT_STRUCTURE.md  # Project structure guide
+│   ├── PROJECT_STRUCTURE.md  # Project structure documentation
 │   └── REACT_MIGRATION_PLAN.md # Migration plan
 └── Version Control
     └── .git/              # Git version control history
 ```
 
 **Notes**:
-- Virtual environment (`venv/`) has been cleaned, needs recreation
-- Database file (`chat.db`) auto-created at runtime
-- All temporary files cleaned, maintaining minimal structure
+- Virtual environment (`venv/`) has been cleaned, needs to be recreated
+- Database file (`chat.db`) is automatically created at runtime
+- All temporary files cleaned, maintaining minimalist structure
 
 ---
 
 ## 🎨 Interface Features
 
 ### Minimalist Design
-- Clean text interface, no icons or decorations
-- Fixed display of A/B/C/D/Accept quick action buttons
+- Pure text interface, no icon decorations
+- Fixed display of A/B/C/D/Accept shortcut buttons
 - Unified design language and interaction patterns
 
-### Core Functionality
-- **Intelligent Requirement Clarification**: DeepSeek-based multi-turn dialogue system
-- **Quick Options**: A/B/C/D/Accept fixed display for rapid response
-- **Web Search**: Real-time search integration for background information support
+### Core Features
+- **Intelligent Requirements Clarification**: DeepSeek-based multi-round dialogue system
+- **Quick Options**: A/B/C/D/Accept always displayed for fast response
+- **Web Search**: Integrated real-time search for background information support
 - **Data Persistence**: Complete conversation history storage and management
-- **API Service**: FastAPI backend with RESTful interface support
+- **API Service**: FastAPI backend supporting RESTful interfaces
 
 ---
 
 ## 🔧 Configuration
 
-### Environment Variable Configuration
+### Environment Variables
 
-The project uses `.env` file for configuration. Copy from `.env.example` for first use:
+The project uses `.env` file for configuration. For first-time use, copy from `.env.example`:
 
 ```bash
 cp .env.example .env
@@ -164,20 +182,20 @@ cp .env.example .env
 
 ```bash
 # DeepSeek API configuration (required)
-DEEPSEEK_API_KEY=your_deepseek_api_key_here
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 ```
 
-Get API Key: [https://platform.deepseek.com/](https://platform.deepseek.com/)
+Get API key: [https://platform.deepseek.com/](https://platform.deepseek.com/)
 
 ### Optional Configuration
 
 ```bash
-# Serper search API (optional, disables search if not configured)
+# Serper search API (optional, search disabled if not configured)
 SERPER_API_KEY=your_serper_api_key_here
 ```
 
-Get API Key: [https://serper.dev/](https://serper.dev/)
+Get API key: [https://serper.dev/](https://serper.dev/)
 
 ### Application Configuration
 
@@ -190,67 +208,61 @@ DEFAULT_PORT=8501
 MAX_CONVERSATION_HISTORY=10        # Number of conversation rounds to keep
 SEARCH_MIN_LENGTH=10               # Minimum input length to trigger search
 SEARCH_ON_FOLLOWUP=false           # Enable search in follow-up conversations
-MIN_MESSAGES_FOR_REPORT=3          # Minimum messages needed to generate report
+MIN_MESSAGES_FOR_REPORT=3          # Minimum messages for report generation
 
 # Database configuration
 DATABASE_URL=sqlite:///chat.db
 
 # Performance configuration
-ENABLE_SEARCH_CACHE=true           # Enable search cache
+ENABLE_SEARCH_CACHE=true           # Enable search caching
 SEARCH_CACHE_TTL_HOURS=24          # Search cache validity period (hours)
 ENABLE_LLM_CACHING=true            # Enable LLM caching
 ```
 
+
 ---
 
-## 📊 Feature Matrix
+## 📊 Features
 
 ### ✅ Implemented Features
-- [x] Intelligent requirement clarification dialogue
-- [x] A/B/C/D quick option buttons
+- [x] Intelligent requirements clarification dialogue
+- [x] A/B/C/D quick options
 - [x] Custom response support
 - [x] Real-time web search
 - [x] Conversation history storage
 - [x] Accept command to complete analysis
-- [x] Complete requirement report generation
+- [x] Complete requirements report generation
 - [x] FastAPI backend service
 - [x] Responsive interface design
 
 ### 🔄 Technical Optimizations
-- [x] Minimal project structure (12 core files)
+- [x] Minimalist project structure (12 core files)
 - [x] Project size optimization (472KB)
 - [x] Cleaned temporary files and cache
 - [x] Unified naming conventions
 - [x] Version control management
 
-### ⏳ Migration Tasks
-- [ ] Backend CORS configuration
-- [ ] Core chat component development
-- [ ] API service layer implementation
-- [ ] UI optimization and testing
-- [ ] Production deployment preparation
-
 ---
 
-## 🛠️ Development Guidelines
+## 🐛 Development Guide
 
 ### Development Principles
 
-#### Workspace Simplicity Principle
-- Keep root directory containing only essential files for runtime
-- Clean up temporary files, screenshots, test reports promptly
+#### Working Directory Simplicity Principle
+- Keep root directory containing only essential files for operation
+- Clean up temporary files, screenshots, test reports in a timely manner
 - Avoid duplicate version files, use git version control
 - Don't keep "might be useful later" files
 
-#### Minimalist Naming Principle
+#### Naming Simplicity Principle
 - Use function-oriented naming: `server.py`, `search.py`, `database.py`
 - Remove redundant prefixes and version identifiers
 - Use consistent lowercase letters + underscores
-- Maintain cross-platform naming compatibility
+- Maintain cross-platform compatible naming
 
 #### Interface Design Principle
-- Minimalist approach, focus on core functionality
-- Remove decorative icons and emojis
+- Minimalism, focus on core functionality
+- Remove decorative icons and emoji
 - Fixed display of common interactive elements
 - Maintain unified design language
 
@@ -258,40 +270,41 @@ ENABLE_LLM_CACHING=true            # Enable LLM caching
 
 ## 📈 Version History
 
-### v0.3.0 (Current) - React Migration in Progress
-- ✅ Complete React + TypeScript + Vite scaffold setup
-- ✅ TailwindCSS configuration (DeepSeek style)
-- ✅ Core dependencies installed (zustand, react-query, socket.io)
-- ✅ Project structure simplified, enhancement system removed
-- 🔄 Backend CORS configuration in progress
-- ⏳ Chat component development pending
+### v0.3.0 (2025-11-21) - React Architecture Migration Version
+- ✅ React + TypeScript + Vite scaffolding completed
+- ✅ TailwindCSS configured (DeepSeek style)
+- ✅ Core dependencies installed
+- ✅ Project structure simplified, enhanced prompt system removed
+- ✅ README translated to English
+- ✅ Code archived to GitHub
 
-### v0.2.1 - Project Cleanup and Optimization
-- ✅ Removed virtual environment (579MB+) and temporary files
-- ✅ Cleaned test databases and cache files
+### v0.2.1 (2025-11-20) - Project Cleanup & Optimization Version
+- ✅ Deleted virtual environment (579MB+) and temporary files
+- ✅ Cleaned test database and cache files
 - ✅ Removed all .DS_Store system files
-- ✅ Optimized project structure, maintaining 12 core files
-- ✅ Project size reduced from 585MB+ to 472KB
+- ✅ Optimized project structure, keeping 12 core files
+- ✅ Reduced project size from 585MB+ to 472KB
+- ✅ Updated documentation to reflect current project status
 
-### v0.2.0 - Feature Enhancement
-- ✅ Database functionality enhancement
-- ✅ Search feature addition
-- ✅ UI component optimization
-- ✅ FastAPI service integration
+### v0.2.0 (2025-11-09) - Feature Enhancement Version
+- ✅ Enhanced database functionality
+- ✅ Added search functionality
+- ✅ Optimized UI components
+- ✅ Integrated FastAPI service
 
-### v0.1.0 - Initial Version
-- ✅ Basic requirement clarification functionality
+### v0.1.0 (2025-11-03) - Initial Version
+- ✅ Basic requirements clarification functionality
 - ✅ Streamlit interface
 - ✅ DeepSeek integration
 
 ---
 
-## 📞 Support and Usage
+## 📞 Support & Usage
 
-### Quick Testing
-1. Start application: `python server.py`
-2. Open browser and navigate to displayed address
-3. Input test requirement: "I want to build a website"
+### Quick Test
+1. Start application: `./start.sh`
+2. Open browser and visit the displayed address
+3. Input test requirement: "I want to create a website"
 4. Experience AI questioning and clarification process
 
 ### API Service
@@ -300,7 +313,7 @@ Start API service:
 python server.py
 ```
 
-API documentation access: http://localhost:8000/docs
+API documentation: http://localhost:8000/docs
 
 ---
 
@@ -311,6 +324,6 @@ MIT License
 ---
 
 **Project Version**: v0.3.0
-**Last Updated**: 2025-12-16
+**Last Updated**: 2025-11-21
 **Development Directory**: `/Users/hl/Projects/Agent/agent_ask/`
-**GitHub Repository**: [https://github.com/Golden-forest/Agent_Ask](https://github.com/Golden-forest/Agent_Ask)
+**GitHub Repository**: https://github.com/Golden-forest/Agent_Ask
