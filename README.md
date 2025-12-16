@@ -1,6 +1,6 @@
 # 智能澄清Agent
 
-> 极简主义设计的AI需求澄清助手
+> 极简主义设计的AI需求澄清助手 (React迁移进行中)
 
 ---
 
@@ -12,11 +12,13 @@
 
 ## ✨ 当前状态
 
-**v0.2.1** - 项目清理优化版本
-- ✅ 已完成项目清理，删除585MB+临时文件
-- ✅ 保持12个核心文件，项目大小仅472KB
-- ✅ 极简设计，专注核心功能
-- ✅ 需要重新创建虚拟环境
+**v0.3.0** - React架构迁移版本
+- ✅ 完成React + TypeScript + Vite脚手架搭建
+- ✅ 配置TailwindCSS (DeepSeek风格)
+- ✅ 安装核心依赖 (zustand, react-query, socket.io等)
+- 🔄 后端CORS配置进行中
+- ⏳ 聊天组件开发待开始
+- ✅ 简化项目结构，移除增强提示词系统
 
 ---
 
@@ -88,12 +90,19 @@ cp .env.example .env
 ## 🏗️ 技术架构
 
 ### 核心技术栈
-- **前端框架**: Streamlit 1.50.0
+- **前端框架**: React 18 + TypeScript + Vite ✅
 - **API框架**: FastAPI 0.121.0
 - **LLM服务**: DeepSeek (via langchain-openai)
 - **数据库**: SQLAlchemy 2.0.44
 - **搜索功能**: Serper API集成
 - **Python版本**: 3.9.6
+
+### 前端技术栈
+- **状态管理**: Zustand ✅ 已安装
+- **UI框架**: TailwindCSS + Headless UI ✅ 已配置
+- **实时通信**: Socket.IO ✅ 已安装
+- **API集成**: TanStack Query ✅ 已安装
+- **路由**: React Router v6 ✅ 已安装
 
 ### 设计特点
 - **极简主义**: 纯文本界面，无装饰元素
@@ -106,25 +115,34 @@ cp .env.example .env
 ## 📁 项目结构
 
 ```
-智能澄清Agent/
-├── 核心代码文件
-│   ├── main.py           # 主程序入口
-│   ├── config.py         # 配置管理
-│   ├── ui.py             # UI组件系统
-│   ├── search.py         # 网络搜索功能
-│   ├── database.py       # 数据库操作
-│   └── server.py         # FastAPI服务器
-├── 配置文件
-│   ├── .env              # 环境变量配置
-│   ├── .gitignore        # Git忽略规则
-│   └── requirements.txt  # Python依赖清单
+agent_ask/
+├── 后端文件 (根目录)
+│   ├── server.py           # FastAPI服务器 (需添加CORS)
+│   ├── database.py         # 数据库模块
+│   ├── config.py          # 配置管理
+│   ├── search.py          # 搜索模块
+│   ├── requirements.txt   # Python依赖
+│   ├── .env               # 环境变量配置
+│   ├── chat.db            # SQLite数据库
+│   └── venv/              # Python虚拟环境
+├── frontend/              # React前端 ✅ 已创建
+│   ├── src/
+│   │   ├── index.css     # TailwindCSS样式 ✅ 已配置
+│   │   ├── App.tsx       # 主应用组件 (待开发)
+│   │   └── main.tsx      # 应用入口
+│   ├── public/           # 静态资源
+│   ├── node_modules/     # npm依赖
+│   ├── package.json      # 项目配置
+│   ├── tailwind.config.js # TailwindCSS配置
+│   ├── postcss.config.js  # PostCSS配置
+│   ├── vite.config.ts     # Vite配置
+│   └── tsconfig.json      # TypeScript配置
 ├── 文档文件
-│   ├── README.md         # 项目说明文档
-│   └── PROJECT_STRUCTURE.md  # 项目结构说明
-├── 脚本文件
-│   └── start.sh          # 应用启动脚本
+│   ├── README.md          # 项目说明文档
+│   ├── PROJECT_STRUCTURE.md  # 项目结构文档
+│   └── REACT_MIGRATION_PLAN.md # 迁移方案
 └── 版本控制
-    └── .git/             # Git版本控制历史
+    └── .git/              # Git版本控制历史
 ```
 
 **注意**:
