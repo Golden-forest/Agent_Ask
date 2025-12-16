@@ -1,320 +1,316 @@
-# 智能澄清Agent
+# Agent_Ask
 
-> 极简主义设计的AI需求澄清助手 (React迁移进行中)
-
----
-
-## 🎯 项目概述
-
-智能澄清Agent是一个基于DeepSeek的AI助手，通过结构化提问帮助用户明确和优化需求。项目采用极简设计理念，专注核心功能，界面简洁无装饰。
+> AI-powered Requirement Clarification Assistant with Minimalist Design
 
 ---
 
-## ✨ 当前状态
+## 🎯 Project Overview
 
-**v0.3.0** - React架构迁移版本
-- ✅ 完成React + TypeScript + Vite脚手架搭建
-- ✅ 配置TailwindCSS (DeepSeek风格)
-- ✅ 安装核心依赖 (zustand, react-query, socket.io等)
-- 🔄 后端CORS配置进行中
-- ⏳ 聊天组件开发待开始
-- ✅ 简化项目结构，移除增强提示词系统
+Agent_Ask is an AI-powered assistant based on DeepSeek that helps users clarify and optimize requirements through structured questioning. The project adopts a minimalist design philosophy, focusing on core functionality with a clean, distraction-free interface.
 
 ---
 
-## 🚀 快速开始
+## ✨ Current Status
 
-### 一键环境配置（推荐）
+**v0.3.0** - React Migration in Progress
+- ✅ React + TypeScript + Vite scaffold completed
+- ✅ TailwindCSS configured (DeepSeek style)
+- ✅ Core dependencies installed (zustand, react-query, socket.io, etc.)
+- 🔄 Backend CORS configuration in progress
+- ⏳ Chat component development pending
+- ✅ Project structure simplified, enhancement system removed
+
+---
+
+## 🚀 Quick Start
+
+### Backend Setup
 
 ```bash
-# 1. 进入项目目录
+# Navigate to project directory
 cd /Users/hl/Projects/Agent/agent_ask
 
-# 2. 运行自动配置脚本
-chmod +x setup_env.sh
-./setup_env.sh
-
-# 3. 配置API密钥
-# 编辑 .env 文件，填入您的 DeepSeek API 密钥
-# DEEPSEEK_API_KEY=sk-xxxxxxxx
-
-# 4. 启动应用
-./start.sh
-```
-
-### 手动环境配置
-
-<details>
-<summary>点击展开手动配置步骤</summary>
-
-```bash
-# 1. 进入项目目录
-cd /Users/hl/Projects/Agent/agent_ask
-
-# 2. 创建虚拟环境
-python -m venv venv
-
-# 3. 激活虚拟环境
+# Activate virtual environment
 source venv/bin/activate
 
-# 4. 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
-# 5. 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件，填入您的API密钥
-
-# 6. 启动应用
-./start.sh
+# Start backend server
+python server.py
 ```
 
-</details>
+### Frontend Setup
 
-### 访问地址
-- **默认端口**: 8501
-- **自动端口检测**: 如果8501被占用，自动尝试8502、8503...
+```bash
+# Navigate to frontend directory
+cd frontend
 
+# Install dependencies (first time only)
+npm install
 
----
+# Start development server
+npm run dev
+```
 
-## 💡 使用流程
-
-1. **描述需求** - 输入你的初始想法或需求
-2. **AI提问** - AI提出针对性澄清问题（A/B/C/D选项）
-3. **选择回答** - 选择预设选项或自定义回复
-4. **多轮对话** - 持续对话直到需求明确
-5. **完成分析** - 输入"Accept"获取完整需求分析报告
-
----
-
-## 🏗️ 技术架构
-
-### 核心技术栈
-- **前端框架**: React 18 + TypeScript + Vite ✅
-- **API框架**: FastAPI 0.121.0
-- **LLM服务**: DeepSeek (via langchain-openai)
-- **数据库**: SQLAlchemy 2.0.44
-- **搜索功能**: Serper API集成
-- **Python版本**: 3.9.6
-
-### 前端技术栈
-- **状态管理**: Zustand ✅ 已安装
-- **UI框架**: TailwindCSS + Headless UI ✅ 已配置
-- **实时通信**: Socket.IO ✅ 已安装
-- **API集成**: TanStack Query ✅ 已安装
-- **路由**: React Router v6 ✅ 已安装
-
-### 设计特点
-- **极简主义**: 纯文本界面，无装饰元素
-- **固定布局**: A/B/C/D/Accept按钮始终显示
-- **响应式设计**: 适配桌面、平板、手机设备
-- **深色主题**: 专注内容，减少干扰
+### Access Points
+- **Frontend**: http://localhost:5173/ (React development server)
+- **Backend API**: http://localhost:8000/ (FastAPI server)
 
 ---
 
-## 📁 项目结构
+## 💡 Usage Workflow
+
+1. **Describe Requirement** - Input your initial idea or requirement
+2. **AI Questioning** - AI asks targeted clarification questions (A/B/C/D options)
+3. **Select Response** - Choose preset options or provide custom answers
+4. **Multi-turn Dialogue** - Continue conversation until requirements are clear
+5. **Complete Analysis** - Input "Accept" to get comprehensive requirement analysis report
+
+---
+
+## 🏗️ Technical Architecture
+
+### Core Technology Stack
+- **Frontend Framework**: React 18 + TypeScript + Vite ✅
+- **API Framework**: FastAPI 0.121.0
+- **LLM Service**: DeepSeek (via langchain-openai)
+- **Database**: SQLAlchemy 2.0.44
+- **Search Functionality**: Serper API integration
+- **Python Version**: 3.9.6
+
+### Frontend Technology Stack
+- **State Management**: Zustand ✅ Installed
+- **UI Framework**: TailwindCSS + Headless UI ✅ Configured
+- **Real-time Communication**: Socket.IO ✅ Installed
+- **API Integration**: TanStack Query ✅ Installed
+- **Routing**: React Router v6 ✅ Installed
+
+### Design Features
+- **Minimalist**: Clean text interface, no decorative elements
+- **Fixed Layout**: A/B/C/D/Accept buttons always visible
+- **Responsive Design**: Adapts to desktop, tablet, and mobile devices
+- **Dark Theme**: DeepSeek-inspired color scheme
+
+---
+
+## 📁 Project Structure
 
 ```
 agent_ask/
-├── 后端文件 (根目录)
-│   ├── server.py           # FastAPI服务器 (需添加CORS)
-│   ├── database.py         # 数据库模块
-│   ├── config.py          # 配置管理
-│   ├── search.py          # 搜索模块
-│   ├── requirements.txt   # Python依赖
-│   ├── .env               # 环境变量配置
-│   ├── chat.db            # SQLite数据库
-│   └── venv/              # Python虚拟环境
-├── frontend/              # React前端 ✅ 已创建
+├── Backend Files (Root Directory)
+│   ├── server.py           # FastAPI server (CORS needed)
+│   ├── database.py         # Database module
+│   ├── config.py          # Configuration management
+│   ├── search.py          # Search module
+│   ├── requirements.txt   # Python dependencies
+│   ├── .env               # Environment variables (NOT in git)
+│   ├── chat.db            # SQLite database
+│   └── venv/              # Python virtual environment
+├── frontend/              # React frontend ✅ Created
 │   ├── src/
-│   │   ├── index.css     # TailwindCSS样式 ✅ 已配置
-│   │   ├── App.tsx       # 主应用组件 (待开发)
-│   │   └── main.tsx      # 应用入口
-│   ├── public/           # 静态资源
-│   ├── node_modules/     # npm依赖
-│   ├── package.json      # 项目配置
-│   ├── tailwind.config.js # TailwindCSS配置
-│   ├── postcss.config.js  # PostCSS配置
-│   ├── vite.config.ts     # Vite配置
-│   └── tsconfig.json      # TypeScript配置
-├── 文档文件
-│   ├── README.md          # 项目说明文档
-│   ├── PROJECT_STRUCTURE.md  # 项目结构文档
-│   └── REACT_MIGRATION_PLAN.md # 迁移方案
-└── 版本控制
-    └── .git/              # Git版本控制历史
+│   │   ├── index.css     # TailwindCSS styles ✅ Configured
+│   │   ├── App.tsx       # Main application component (pending)
+│   │   └── main.tsx      # Application entry point
+│   ├── public/           # Static assets
+│   ├── node_modules/     # npm dependencies
+│   ├── package.json      # Project configuration
+│   ├── tailwind.config.js # TailwindCSS configuration
+│   ├── postcss.config.js  # PostCSS configuration
+│   ├── vite.config.ts     # Vite configuration
+│   └── tsconfig.json      # TypeScript configuration
+├── Documentation Files
+│   ├── README.md          # Project documentation
+│   ├── PROJECT_STRUCTURE.md  # Project structure guide
+│   └── REACT_MIGRATION_PLAN.md # Migration plan
+└── Version Control
+    └── .git/              # Git version control history
 ```
 
-**注意**:
-- 虚拟环境(`venv/`)已清理，需要重新创建
-- 数据库文件(`chat.db`)运行时自动创建
-- 所有临时文件已清理，保持极简结构
+**Notes**:
+- Virtual environment (`venv/`) has been cleaned, needs recreation
+- Database file (`chat.db`) auto-created at runtime
+- All temporary files cleaned, maintaining minimal structure
 
 ---
 
-## 🎨 界面特色
+## 🎨 Interface Features
 
-### 极简设计
-- 纯文本界面，无图标装饰
-- 固定显示A/B/C/D/Accept快捷按钮
-- 统一的设计语言和交互模式
+### Minimalist Design
+- Clean text interface, no icons or decorations
+- Fixed display of A/B/C/D/Accept quick action buttons
+- Unified design language and interaction patterns
 
-### 核心功能
-- **智能需求澄清**: 基于DeepSeek的多轮对话系统
-- **快捷选项**: A/B/C/D/Accept固定显示，便于快速响应
-- **网络搜索**: 集成实时搜索，提供背景信息支持
-- **数据持久化**: 完整的对话历史存储和管理
-- **API服务**: FastAPI后端，支持RESTful接口
+### Core Functionality
+- **Intelligent Requirement Clarification**: DeepSeek-based multi-turn dialogue system
+- **Quick Options**: A/B/C/D/Accept fixed display for rapid response
+- **Web Search**: Real-time search integration for background information support
+- **Data Persistence**: Complete conversation history storage and management
+- **API Service**: FastAPI backend with RESTful interface support
 
 ---
 
-## 🔧 配置说明
+## 🔧 Configuration
 
-### 环境变量配置
+### Environment Variable Configuration
 
-项目使用 `.env` 文件进行配置。首次使用时，可从 `.env.example` 复制：
+The project uses `.env` file for configuration. Copy from `.env.example` for first use:
 
 ```bash
 cp .env.example .env
 ```
 
-### 必需配置
+### Required Configuration
 
 ```bash
-# DeepSeek API配置（必需）
-DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
+# DeepSeek API configuration (required)
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 ```
 
-获取API密钥：[https://platform.deepseek.com/](https://platform.deepseek.com/)
+Get API Key: [https://platform.deepseek.com/](https://platform.deepseek.com/)
 
-### 可选配置
+### Optional Configuration
 
 ```bash
-# Serper搜索API（可选，不配置则禁用搜索功能）
+# Serper search API (optional, disables search if not configured)
 SERPER_API_KEY=your_serper_api_key_here
 ```
 
-获取API密钥：[https://serper.dev/](https://serper.dev/)
+Get API Key: [https://serper.dev/](https://serper.dev/)
 
-### 应用配置
+### Application Configuration
 
 ```bash
-# 基础配置
-APP_NAME=智能澄清Agent
+# Basic configuration
+APP_NAME=Agent_Ask
 DEFAULT_PORT=8501
 
-# 对话配置
-MAX_CONVERSATION_HISTORY=10        # 对话历史保留轮数
-SEARCH_MIN_LENGTH=10               # 触发搜索的最小输入长度
-SEARCH_ON_FOLLOWUP=false           # 是否在后续对话中启用搜索
-MIN_MESSAGES_FOR_REPORT=3          # 生成报告的最小消息数
+# Conversation configuration
+MAX_CONVERSATION_HISTORY=10        # Number of conversation rounds to keep
+SEARCH_MIN_LENGTH=10               # Minimum input length to trigger search
+SEARCH_ON_FOLLOWUP=false           # Enable search in follow-up conversations
+MIN_MESSAGES_FOR_REPORT=3          # Minimum messages needed to generate report
 
-# 数据库配置
+# Database configuration
 DATABASE_URL=sqlite:///chat.db
 
-# 性能配置
-ENABLE_SEARCH_CACHE=true           # 启用搜索缓存
-SEARCH_CACHE_TTL_HOURS=24          # 搜索缓存有效期（小时）
-ENABLE_LLM_CACHING=true            # 启用LLM缓存
+# Performance configuration
+ENABLE_SEARCH_CACHE=true           # Enable search cache
+SEARCH_CACHE_TTL_HOURS=24          # Search cache validity period (hours)
+ENABLE_LLM_CACHING=true            # Enable LLM caching
 ```
 
+---
+
+## 📊 Feature Matrix
+
+### ✅ Implemented Features
+- [x] Intelligent requirement clarification dialogue
+- [x] A/B/C/D quick option buttons
+- [x] Custom response support
+- [x] Real-time web search
+- [x] Conversation history storage
+- [x] Accept command to complete analysis
+- [x] Complete requirement report generation
+- [x] FastAPI backend service
+- [x] Responsive interface design
+
+### 🔄 Technical Optimizations
+- [x] Minimal project structure (12 core files)
+- [x] Project size optimization (472KB)
+- [x] Cleaned temporary files and cache
+- [x] Unified naming conventions
+- [x] Version control management
+
+### ⏳ Migration Tasks
+- [ ] Backend CORS configuration
+- [ ] Core chat component development
+- [ ] API service layer implementation
+- [ ] UI optimization and testing
+- [ ] Production deployment preparation
 
 ---
 
-## 📊 功能特性
+## 🛠️ Development Guidelines
 
-### ✅ 已实现功能
-- [x] 智能需求澄清对话
-- [x] A/B/C/D快捷选项
-- [x] 自定义回答支持
-- [x] 实时网络搜索
-- [x] 对话历史存储
-- [x] Accept命令完成分析
-- [x] 完整需求报告生成
-- [x] FastAPI后端服务
-- [x] 响应式界面设计
+### Development Principles
 
-### 🔄 技术优化
-- [x] 极简项目结构（12个核心文件）
-- [x] 项目大小优化（472KB）
-- [x] 清理临时文件和缓存
-- [x] 统一命名规范
-- [x] 版本控制管理
+#### Workspace Simplicity Principle
+- Keep root directory containing only essential files for runtime
+- Clean up temporary files, screenshots, test reports promptly
+- Avoid duplicate version files, use git version control
+- Don't keep "might be useful later" files
 
----
+#### Minimalist Naming Principle
+- Use function-oriented naming: `server.py`, `search.py`, `database.py`
+- Remove redundant prefixes and version identifiers
+- Use consistent lowercase letters + underscores
+- Maintain cross-platform naming compatibility
 
-## 🐛 开发指南
-
-### 开发原则
-
-#### 工作目录简洁原则
-- 保持根目录只包含运行必需的文件
-- 及时清理临时文件、截图、测试报告
-- 避免重复版本文件，使用git版本控制
-- 不保留"以后可能有用"的文件
-
-#### 命名简约原则
-- 使用功能导向命名：`server.py`、`search.py`、`database.py`
-- 去除冗余前缀和版本标识
-- 统一使用小写字母+下划线
-- 保持命名跨平台兼容
-
-#### 界面设计原则
-- 极简主义，专注核心功能
-- 去除装饰性图标和emoji
-- 固定显示常用交互元素
-- 保持统一的设计语言
+#### Interface Design Principle
+- Minimalist approach, focus on core functionality
+- Remove decorative icons and emojis
+- Fixed display of common interactive elements
+- Maintain unified design language
 
 ---
 
-## 📈 版本历史
+## 📈 Version History
 
-### v0.2.1 (2025-11-20) - 项目清理优化版本
-- ✅ 删除虚拟环境(579MB+)和临时文件
-- ✅ 清理测试数据库和缓存文件
-- ✅ 移除所有.DS_Store系统文件
-- ✅ 优化项目结构，保持12个核心文件
-- ✅ 项目大小从585MB+降至472KB
-- ✅ 更新文档，反映当前项目状态
+### v0.3.0 (Current) - React Migration in Progress
+- ✅ Complete React + TypeScript + Vite scaffold setup
+- ✅ TailwindCSS configuration (DeepSeek style)
+- ✅ Core dependencies installed (zustand, react-query, socket.io)
+- ✅ Project structure simplified, enhancement system removed
+- 🔄 Backend CORS configuration in progress
+- ⏳ Chat component development pending
 
-### v0.2.0 (2025-11-09) - 功能完善版本
-- ✅ 完善数据库功能
-- ✅ 添加搜索功能
-- ✅ 优化UI组件
-- ✅ 集成FastAPI服务
+### v0.2.1 - Project Cleanup and Optimization
+- ✅ Removed virtual environment (579MB+) and temporary files
+- ✅ Cleaned test databases and cache files
+- ✅ Removed all .DS_Store system files
+- ✅ Optimized project structure, maintaining 12 core files
+- ✅ Project size reduced from 585MB+ to 472KB
 
-### v0.1.0 (2025-11-03) - 初始版本
-- ✅ 基础需求澄清功能
-- ✅ Streamlit界面
-- ✅ DeepSeek集成
+### v0.2.0 - Feature Enhancement
+- ✅ Database functionality enhancement
+- ✅ Search feature addition
+- ✅ UI component optimization
+- ✅ FastAPI service integration
+
+### v0.1.0 - Initial Version
+- ✅ Basic requirement clarification functionality
+- ✅ Streamlit interface
+- ✅ DeepSeek integration
 
 ---
 
-## 📞 支持与使用
+## 📞 Support and Usage
 
-### 快速测试
-1. 启动应用：`./start.sh`
-2. 打开浏览器访问显示的地址
-3. 输入测试需求："我想做一个网站"
-4. 体验AI提问和澄清过程
+### Quick Testing
+1. Start application: `python server.py`
+2. Open browser and navigate to displayed address
+3. Input test requirement: "I want to build a website"
+4. Experience AI questioning and clarification process
 
-### API服务
-启动API服务：
+### API Service
+Start API service:
 ```bash
 python server.py
 ```
 
-API文档访问：http://localhost:8000/docs
+API documentation access: http://localhost:8000/docs
 
 ---
 
-## 📄 许可证
+## 📄 License
 
 MIT License
 
 ---
 
-**项目版本**: v0.2.1
-**最后更新**: 2025-11-20
-**开发目录**: `/Users/hl/Projects/Agent/agent_ask/`
+**Project Version**: v0.3.0
+**Last Updated**: 2025-12-16
+**Development Directory**: `/Users/hl/Projects/Agent/agent_ask/`
+**GitHub Repository**: [https://github.com/Golden-forest/Agent_Ask](https://github.com/Golden-forest/Agent_Ask)
