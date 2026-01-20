@@ -3,9 +3,10 @@ import { useChatStore } from '../../store/chatStore';
 import { MessageItem } from './MessageItem';
 import { ChatInput } from './ChatInput';
 import { LoadingIndicator } from './LoadingIndicator';
+import { TerminalLog } from '../ui/TerminalLog';
 
 export const ChatInterface: React.FC = () => {
-    const { messages, isLoading, isSearching } = useChatStore();
+    const { messages, isLoading, isSearching, systemStatus } = useChatStore();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -48,6 +49,13 @@ export const ChatInterface: React.FC = () => {
             <div className="mt-auto pt-4 bg-background/95 backdrop-blur-sm sticky bottom-0 z-10">
                 <ChatInput />
             </div>
+
+            {/* Terminal Status Log */}
+            {systemStatus.length > 0 && (
+                <div className="fixed bottom-20 left-4 right-4 max-w-md">
+                    <TerminalLog logs={systemStatus} maxLogs={5} />
+                </div>
+            )}
         </div>
     );
 };
