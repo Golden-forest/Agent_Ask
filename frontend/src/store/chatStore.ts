@@ -23,7 +23,7 @@ interface ChatStore {
     initSocket: () => void;
     toggleOption: (option: string) => void;
     clearSelectedOptions: () => void;
-    addSystemStatus: (status: Omit<SystemStatus, 'timestamp'>) => void;
+    addSystemStatus: (status: Omit<SystemStatus, 'id' | 'timestamp'>) => void;
     setPhase: (phase: SystemPhase) => void;
     clearSystemStatus: () => void;
     toggleTerminalLog: () => void;
@@ -312,6 +312,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     addSystemStatus: (status) => {
         const newStatus: SystemStatus = {
             ...status,
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             timestamp: Date.now(),
         };
         set((state) => ({

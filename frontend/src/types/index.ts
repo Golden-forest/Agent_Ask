@@ -22,6 +22,7 @@ export type SystemPhase =
   | 'error';
 
 export interface SystemStatus {
+  id: string;
   phase: SystemPhase;
   message: string;
   details?: string;
@@ -30,6 +31,4 @@ export interface SystemStatus {
   metadata?: Record<string, string | number>;
 }
 
-export interface TerminalLog extends SystemStatus {
-  id: string;
-}
+export type TerminalLog = SystemStatus;

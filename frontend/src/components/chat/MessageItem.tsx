@@ -27,7 +27,7 @@ function parseOptions(content: string): { mainText: string; options: string[] } 
     const inlineMatches = [...content.matchAll(inlinePattern)];
     if (inlineMatches.length > 0) {
         options = inlineMatches.map(match => {
-            const [, number, title, description] = match;
+            const [, , title, description] = match;
             return `${title.trim()}: ${description.trim()}`;
         });
 

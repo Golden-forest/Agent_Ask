@@ -1,12 +1,12 @@
 import React from 'react';
-import type { TerminalLog as TerminalLogType } from '../../types';
+import type { SystemStatus } from '../../types';
 
 interface TerminalLogProps {
-  logs: TerminalLogType[];
+  logs: SystemStatus[];
   maxLogs?: number;
 }
 
-const phaseColors: Record<TerminalLogType['phase'], string> = {
+const phaseColors: Record<SystemStatus['phase'], string> = {
   idle: 'text-gray-400',
   connecting: 'text-cyan-400',
   sending: 'text-blue-400',
