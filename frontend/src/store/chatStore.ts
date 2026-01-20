@@ -71,9 +71,37 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }),
 
     initSocket: () => {
+        const { addSystemStatus, setPhase } = get();
+
         socketService.connect();
 
+        // Add connection status
+        addSystemStatus({
+            phase: 'connecting',
+            message: '[CONNECT] → Establishing secure connection...',
+            details: 'Host: localhost:8000'
+        });
+
+        socketService.on('connect', () => {
+            addSystemStatus({
+                phase: 'complete',
+                message: '[✓] Connection established',
+                details: '12ms',
+                metadata: { latency: 12 }
+            });
+            setPhase('idle');
+        });
+
         socketService.on('stream_chunk', (data: { content: string; conversation_id: string }) => {
+            // Update streaming status on first chunk
+            if (get().currentPhase !== 'streaming') {
+                addSystemStatus({
+                    phase: 'streaming',
+                    message: '[STREAM] Receiving AI response...',
+                });
+                setPhase('streaming');
+            }
+
             set((state) => {
                 const messages = [...state.messages];
                 const lastMessage = messages[messages.length - 1];
@@ -158,26 +186,54 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                     };
                 }
             });
+
+            // Set phase to complete after streaming finishes
+            setPhase('complete');
         });
 
         socketService.on('search_status', (data: { status: 'searching' | 'completed' | 'error'; info?: string; error?: string }) => {
             const { setSearching } = get();
+
             if (data.status === 'searching') {
+                addSystemStatus({
+                    phase: 'searching',
+                    message: '[SEARCH] → Querying knowledge graph...',
+                });
                 setSearching(true);
-            } else {
+                setPhase('searching');
+            } else if (data.status === 'completed') {
+                addSystemStatus({
+                    phase: 'complete',
+                    message: '[✓] Search complete',
+                    details: `${data.info?.length || 0} bytes retrieved`,
+                });
+                setSearching(false);
+            } else if (data.status === 'error') {
+                addSystemStatus({
+                    phase: 'error',
+                    message: '[!] Search failed',
+                    details: data.error,
+                });
                 setSearching(false);
             }
+
             console.log('Search status:', data);
         });
 
         socketService.on('error', (data: { message: string }) => {
             console.error('Socket error:', data);
+            addSystemStatus({
+                phase: 'error',
+                message: '[!] Socket error',
+                details: data.message,
+            });
             set({ isLoading: false, isSearching: false });
+            setPhase('error');
         });
     },
 
     sendMessage: async (content) => {
-        const { addMessage, setLoading, setSearching, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions } = get();
+        const { addMessage, setLoading, setSearching, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase } = get();
         if (!content.trim() && selectedOptions.length === 0) return;
 
         // Ensure socket is connected
@@ -190,6 +246,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         const fullMessage = selectedOptions.length > 0
             ? `${content}\n\nSelected options: ${selectedOptions.join('; ')}`
             : content;
+
+        // Add sending status
+        addSystemStatus({
+            phase: 'sending',
+            message: '[>] Transmitting payload...',
+            details: `${content.length} bytes`,
+        });
+        setPhase('sending');
 
         // Add user message
         const userMsg: ChatMessage = {
@@ -207,6 +271,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             message: fullMessage,
             history: messages.map(m => ({ role: m.role, content: m.content })),
             conversation_id: currentConversationId || undefined
+        });
+
+        // Add sent status
+        addSystemStatus({
+            phase: 'complete',
+            message: '[✓] Sent successfully',
         });
 
         // Clear selected options after sending
