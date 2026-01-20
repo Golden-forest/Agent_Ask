@@ -9,3 +9,27 @@ export interface ChatMessage {
 }
 
 export type QuickActionType = 'A' | 'B' | 'C' | 'D' | 'Accept';
+
+// System state types for terminal status system
+export type SystemPhase =
+  | 'idle'
+  | 'connecting'
+  | 'sending'
+  | 'searching'
+  | 'inferring'
+  | 'streaming'
+  | 'complete'
+  | 'error';
+
+export interface SystemStatus {
+  phase: SystemPhase;
+  message: string;
+  details?: string;
+  timestamp: number;
+  progress?: number; // 0-100
+  metadata?: Record<string, string | number>;
+}
+
+export interface TerminalLog extends SystemStatus {
+  id: string;
+}
