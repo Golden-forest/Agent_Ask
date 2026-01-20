@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ChatMessage, QuickActionType } from '../types';
+import type { ChatMessage, QuickActionType, SystemStatus, SystemPhase } from '../types';
 import { socketService } from '../services/socket';
 
 interface ChatStore {
@@ -9,6 +9,8 @@ interface ChatStore {
     input: string;
     currentConversationId: string | null;
     selectedOptions: string[];
+    systemStatus: SystemStatus[];
+    currentPhase: SystemPhase;
     setInput: (input: string) => void;
     addMessage: (message: ChatMessage) => void;
     setLoading: (loading: boolean) => void;
@@ -20,6 +22,9 @@ interface ChatStore {
     initSocket: () => void;
     toggleOption: (option: string) => void;
     clearSelectedOptions: () => void;
+    addSystemStatus: (status: Omit<SystemStatus, 'timestamp'>) => void;
+    setPhase: (phase: SystemPhase) => void;
+    clearSystemStatus: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -36,6 +41,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     input: '',
     currentConversationId: null,
     selectedOptions: [],
+    systemStatus: [],
+    currentPhase: 'idle',
 
     setInput: (input) => set({ input }),
 
@@ -222,5 +229,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
     },
 
-    clearSelectedOptions: () => set({ selectedOptions: [] })
+    clearSelectedOptions: () => set({ selectedOptions: [] }),
+
+    addSystemStatus: (status) => {
+        const newStatus: SystemStatus = {
+            ...status,
+            timestamp: Date.now(),
+        };
+        set((state) => ({
+            systemStatus: [...state.systemStatus, newStatus]
+        }));
+    },
+
+    setPhase: (phase) => set({ currentPhase: phase }),
+
+    clearSystemStatus: () => set({ systemStatus: [] }),
 }));
