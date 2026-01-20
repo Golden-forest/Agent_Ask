@@ -233,7 +233,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     },
 
     sendMessage: async (content) => {
-        const { addMessage, setLoading, setSearching, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase } = get();
+        const { addMessage, setLoading, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase } = get();
         if (!content.trim() && selectedOptions.length === 0) return;
 
         // Ensure socket is connected
@@ -269,7 +269,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         // Emit to socket
         socketService.emit('chat_message', {
             message: fullMessage,
-            history: messages.map(m => ({ role: m.role, content: m.content })),
+            history: messages.map(m => ({
+                role: m.role,
+                content: m.content,
+                id: m.id,
+                timestamp: m.timestamp
+            })),
             conversation_id: currentConversationId || undefined
         });
 

@@ -1,7 +1,10 @@
 import { io, Socket } from 'socket.io-client';
+import type { ChatMessage } from '../types';
 
 // Define events
 interface ServerToClientEvents {
+    connect: () => void;
+    disconnect: () => void;
     stream_chunk: (data: { content: string; conversation_id: string }) => void;
     stream_complete: (data: { full_content: string; conversation_id: string; search_info?: string }) => void;
     search_status: (data: { status: 'searching' | 'completed' | 'error'; info?: string; error?: string }) => void;
@@ -11,7 +14,7 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
     chat_message: (data: {
         message: string;
-        history: any[];
+        history: ChatMessage[];
         conversation_id?: string;
         enable_search?: boolean;
     }) => void;
@@ -31,10 +34,6 @@ class SocketService {
 
         this.socket.on('connect', () => {
             console.log('Connected to WebSocket server');
-        });
-
-        this.socket.on('disconnect', () => {
-            console.log('Disconnected from WebSocket server');
         });
 
         this.socket.on('connect_error', (err) => {
@@ -60,8 +59,8 @@ class SocketService {
         if (!this.socket) {
             this.connect();
         }
-        // @ts-ignore - Socket.io types are complex to map perfectly here
-        this.socket?.on(event, callback);
+        // Use type assertion for Socket.io event registration
+        (this.socket as Socket<ServerToClientEvents, ClientToServerEvents>).on(event, callback as any);
     }
 
     off<T extends keyof ServerToClientEvents>(event: T) {
