@@ -25,18 +25,20 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
 
   if (displayLogs.length === 0) {
     return (
-      <div className="font-mono text-xs text-gray-500 p-2">
+      <div className="font-mono text-xs text-gray-500 p-2 animate-fade-in">
         <span className="text-green-500">$</span> System ready...
+        <span className="animate-blink">_</span>
       </div>
     );
   }
 
   return (
     <div className="font-mono text-xs space-y-1 p-2 bg-black/50 rounded border border-green-900/30">
-      {displayLogs.map((log) => (
+      {displayLogs.map((log, index) => (
         <div
           key={log.id}
-          className={`${phaseColors[log.phase]} hover:bg-white/5 px-1 rounded transition-colors`}
+          className={`${phaseColors[log.phase]} hover:bg-white/5 px-1 rounded transition-colors animate-fade-in`}
+          style={{ animationDelay: `${index * 50}ms` }}
         >
           <div className="flex items-start gap-2">
             <span className="shrink-0">{log.message}</span>
@@ -62,6 +64,9 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
           ... ({logs.length - maxLogs} older messages)
         </div>
       )}
+      <div className="text-green-500 animate-blink">
+        _
+      </div>
     </div>
   );
 };

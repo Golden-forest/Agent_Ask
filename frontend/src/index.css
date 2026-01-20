@@ -129,4 +129,34 @@
   .prose-invert blockquote {
     @apply border-l-4 border-primary/50 pl-4 italic text-textSecondary;
   }
+
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Blinking cursor */
+  @keyframes blink {
+    0%, 50% {
+      opacity: 1;
+    }
+    51%, 100% {
+      opacity: 0;
+    }
+  }
+
+  .animate-blink {
+    animation: blink 1s infinite;
+  }
 }
