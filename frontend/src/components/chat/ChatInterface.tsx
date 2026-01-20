@@ -6,7 +6,7 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { TerminalLog } from '../ui/TerminalLog';
 
 export const ChatInterface: React.FC = () => {
-    const { messages, isLoading, isSearching, systemStatus } = useChatStore();
+    const { messages, isLoading, isSearching, systemStatus, showTerminalLog, toggleTerminalLog } = useChatStore();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -51,10 +51,21 @@ export const ChatInterface: React.FC = () => {
             </div>
 
             {/* Terminal Status Log */}
-            {systemStatus.length > 0 && (
+            {showTerminalLog && systemStatus.length > 0 && (
                 <div className="fixed bottom-20 left-4 right-4 max-w-md">
                     <TerminalLog logs={systemStatus} maxLogs={5} />
                 </div>
+            )}
+
+            {/* Terminal Log Toggle Button */}
+            {systemStatus.length > 0 && (
+                <button
+                    onClick={toggleTerminalLog}
+                    className="fixed bottom-4 left-4 z-20 p-2 bg-surface border border-border rounded-lg hover:bg-surfaceHover transition-all duration-200 text-xs font-mono"
+                    title={showTerminalLog ? 'Hide terminal log' : 'Show terminal log'}
+                >
+                    {showTerminalLog ? '🔼' : '🔽'}
+                </button>
             )}
         </div>
     );

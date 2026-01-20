@@ -11,6 +11,7 @@ interface ChatStore {
     selectedOptions: string[];
     systemStatus: SystemStatus[];
     currentPhase: SystemPhase;
+    showTerminalLog: boolean;
     setInput: (input: string) => void;
     addMessage: (message: ChatMessage) => void;
     setLoading: (loading: boolean) => void;
@@ -25,6 +26,7 @@ interface ChatStore {
     addSystemStatus: (status: Omit<SystemStatus, 'timestamp'>) => void;
     setPhase: (phase: SystemPhase) => void;
     clearSystemStatus: () => void;
+    toggleTerminalLog: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -43,6 +45,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     selectedOptions: [],
     systemStatus: [],
     currentPhase: 'idle',
+    showTerminalLog: true,
 
     setInput: (input) => set({ input }),
 
@@ -319,4 +322,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     setPhase: (phase) => set({ currentPhase: phase }),
 
     clearSystemStatus: () => set({ systemStatus: [] }),
+
+    toggleTerminalLog: () => set((state) => ({ showTerminalLog: !state.showTerminalLog })),
 }));
