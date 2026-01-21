@@ -40,6 +40,13 @@ export const ChatInterface: React.FC = () => {
                         {isLoading && (
                             <LoadingIndicator isSearching={isSearching} />
                         )}
+
+                        {/* Terminal Status Log - in conversation flow */}
+                        {showTerminalLog && systemStatus.length > 0 && (
+                            <div className="my-2">
+                                <TerminalLog logs={systemStatus} maxLogs={5} />
+                            </div>
+                        )}
                     </>
                 )}
                 <div ref={messagesEndRef} />
@@ -50,21 +57,14 @@ export const ChatInterface: React.FC = () => {
                 <ChatInput />
             </div>
 
-            {/* Terminal Status Log */}
-            {showTerminalLog && systemStatus.length > 0 && (
-                <div className="fixed bottom-20 left-4 right-4 max-w-md">
-                    <TerminalLog logs={systemStatus} maxLogs={5} />
-                </div>
-            )}
-
-            {/* Terminal Log Toggle Button */}
+            {/* Terminal Log Toggle Button - in header area */}
             {systemStatus.length > 0 && (
                 <button
                     onClick={toggleTerminalLog}
-                    className="fixed bottom-4 left-4 z-20 p-2 bg-surface border border-border rounded-lg hover:bg-surfaceHover transition-all duration-200 text-xs font-mono"
+                    className="fixed top-20 right-4 z-20 p-2 bg-surface/80 backdrop-blur-sm border border-border rounded-lg hover:bg-surfaceHover transition-all duration-200 text-xs font-mono text-textSecondary hover:text-text"
                     title={showTerminalLog ? 'Hide terminal log' : 'Show terminal log'}
                 >
-                    {showTerminalLog ? '🔼' : '🔽'}
+                    {showTerminalLog ? '🔽' : '🔼'}
                 </button>
             )}
         </div>
