@@ -29,10 +29,10 @@ app = FastAPI(
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 socket_app = socketio.ASGIApp(sio, app)
 
-# CORS中间件
+# CORS中间件（允许局域网访问）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:8501", "http://localhost:8504", "http://127.0.0.1:5173"],
+    allow_origins=["*"],  # 允许所有来源（开发环境）
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -417,10 +417,10 @@ async def get_stats():
 if __name__ == "__main__":
     import uvicorn
 
-    # 启动API服务器
+    # 启动API服务器（监听所有网络接口，支持局域网访问）
     uvicorn.run(
         "server:socket_app",  # 使用socket_app而不是app
-        host="127.0.0.1",
+        host="0.0.0.0",  # 监听所有网络接口，允许局域网访问
         port=8000,
         reload=True,
         log_level="info"

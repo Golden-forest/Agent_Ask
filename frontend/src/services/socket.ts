@@ -22,12 +22,18 @@ interface ClientToServerEvents {
 
 class SocketService {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
-    private url: string = 'http://localhost:8000';
+
+    private getUrl(): string {
+        const hostname = window.location.hostname;
+        return hostname === 'localhost' || hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : `http://${hostname}:8000`;
+    }
 
     connect() {
         if (this.socket?.connected) return;
 
-        this.socket = io(this.url, {
+        this.socket = io(this.getUrl(), {
             transports: ['websocket'],
             autoConnect: true,
         });

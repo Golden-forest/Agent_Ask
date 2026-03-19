@@ -1,7 +1,15 @@
 import axios from 'axios';
 import type { ChatMessage } from '../types';
 
-const API_URL = 'http://localhost:8000';
+// 动态获取API地址，支持局域网访问
+const getApiUrl = () => {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1'
+        ? 'http://localhost:8000'
+        : `http://${hostname}:8000`;
+};
+
+const API_URL = getApiUrl();
 
 export const api = axios.create({
     baseURL: API_URL,
