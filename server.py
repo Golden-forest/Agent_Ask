@@ -26,7 +26,13 @@ app = FastAPI(
 )
 
 # Socket.IO设置
-sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins='*',
+    ping_timeout=120,
+    ping_interval=30,
+    max_http_buffer_size=10*1024*1024,  # 10MB
+)
 socket_app = socketio.ASGIApp(sio, app)
 
 # CORS中间件（允许局域网访问）
@@ -104,7 +110,8 @@ async def chat_message(sid, data):
         conversation_id = data.get('conversation_id') or generate_conversation_id()
         
         # 转换历史记录
-        history = [{"role": msg['role'], "content": msg['content']} for msg in history_data]
+        # Limit history to last 20 messages to prevent token overflow
+        history = [{"role": msg['role'], "content": msg['content']} for msg in history_data[-20:]]
         
         # 搜索信息
         search_info = ""
@@ -238,7 +245,8 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
         conversation_id = generate_conversation_id()
 
         # 转换对话历史
-        history = [{"role": msg.role, "content": msg.content} for msg in request.conversation_history]
+        # Limit history to last 20 messages
+        history = [{"role": msg.role, "content": msg.content} for msg in request.conversation_history[-20:]]
 
         # 搜索信息
         search_info = ""
@@ -247,7 +255,7 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
             len(request.message) > 10 and
             os.getenv("SERPER_API_KEY")):
             try:
-                search_info = search_requirement_context(request.message)
+                search_info = await asyncio.to_thread(search_requirement_context, request.message)
             except Exception as e:
                 search_info = f"搜索时出现错误：{str(e)}"
 
@@ -422,6 +430,6 @@ if __name__ == "__main__":
         "server:socket_app",  # 使用socket_app而不是app
         host="0.0.0.0",  # 监听所有网络接口，允许局域网访问
         port=8000,
-        reload=True,
+        reload=False,
         log_level="info"
     )

@@ -15,6 +15,7 @@ interface ChatStore {
     currentPhase: SystemPhase;
     showTerminalLog: boolean;
     attachedFiles: AttachedFile[];
+    _socketInitialized: boolean;
     addFile: (file: File) => Promise<void>;
     removeFile: (fileId: string) => void;
     clearFiles: () => void;
@@ -53,6 +54,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     currentPhase: 'idle',
     showTerminalLog: true,
     attachedFiles: [],
+    _socketInitialized: false,
 
     setInput: (input) => set({ input }),
 
@@ -64,27 +66,35 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     clearChat: () => set({ messages: [], currentConversationId: null }),
 
-    newConversation: () => set({
-        messages: [
-            {
-                id: 'welcome',
-                role: 'assistant',
-                content: 'Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details.',
-                timestamp: new Date(),
-            }
-        ],
-        currentConversationId: null,
-        selectedOptions: [],
-        input: '',
-        isLoading: false,
-        isSearching: false,
-        attachedFiles: [],
-    }),
+    newConversation: () => {
+        socketService.disconnect();
+        set({
+            messages: [
+                {
+                    id: 'welcome',
+                    role: 'assistant',
+                    content: 'Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details.',
+                    timestamp: new Date(),
+                }
+            ],
+            currentConversationId: null,
+            selectedOptions: [],
+            input: '',
+            isLoading: false,
+            isSearching: false,
+            attachedFiles: [],
+            _socketInitialized: false,
+        });
+    },
 
     initSocket: () => {
         const { addSystemStatus, setPhase } = get();
 
+        // Skip if already initialized
+        if (get()._socketInitialized) return;
+
         socketService.connect();
+        get()._socketInitialized = true;
 
         // Add connection status
         addSystemStatus({

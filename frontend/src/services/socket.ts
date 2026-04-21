@@ -36,6 +36,11 @@ class SocketService {
         this.socket = io(this.getUrl(), {
             transports: ['websocket'],
             autoConnect: true,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
         });
 
         this.socket.on('connect', () => {
