@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { ChatMessage, QuickActionType, SystemStatus, SystemPhase } from '../types';
 import { socketService } from '../services/socket';
+import type { AttachedFile } from '../types';
+import { extractText } from '../services/fileParser';
 
 interface ChatStore {
     messages: ChatMessage[];
@@ -12,6 +14,10 @@ interface ChatStore {
     systemStatus: SystemStatus[];
     currentPhase: SystemPhase;
     showTerminalLog: boolean;
+    attachedFiles: AttachedFile[];
+    addFile: (file: File) => Promise<void>;
+    removeFile: (fileId: string) => void;
+    clearFiles: () => void;
     setInput: (input: string) => void;
     addMessage: (message: ChatMessage) => void;
     setLoading: (loading: boolean) => void;
@@ -46,6 +52,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     systemStatus: [],
     currentPhase: 'idle',
     showTerminalLog: true,
+    attachedFiles: [],
 
     setInput: (input) => set({ input }),
 
@@ -70,7 +77,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         selectedOptions: [],
         input: '',
         isLoading: false,
-        isSearching: false
+        isSearching: false,
+        attachedFiles: [],
     }),
 
     initSocket: () => {
@@ -236,8 +244,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     },
 
     sendMessage: async (content) => {
-        const { addMessage, setLoading, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase } = get();
-        if (!content.trim() && selectedOptions.length === 0) return;
+        const { addMessage, setLoading, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase, attachedFiles, clearFiles } = get();
+        if (!content.trim() && selectedOptions.length === 0 && attachedFiles.length === 0) return;
 
         // Ensure socket is connected
         initSocket();
@@ -245,20 +253,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         // Reset states when sending new message
         set({ isSearching: false });
 
-        // Build full message with selected options
-        const fullMessage = selectedOptions.length > 0
-            ? `${content}\n\nSelected options: ${selectedOptions.join('; ')}`
-            : content;
+        // Build file content section
+        let fileSection = '';
+        const readyFiles = attachedFiles.filter(f => f.status === 'ready');
+        if (readyFiles.length > 0) {
+            const fileBlocks = readyFiles.map(f =>
+                `--- 附件: ${f.name} ---\n${f.content}`
+            );
+            fileSection = '\n\n' + fileBlocks.join('\n\n');
+        }
+
+        // Build full message with selected options and file content
+        let fullMessage = content;
+        if (selectedOptions.length > 0) {
+            fullMessage += `\n\nSelected options: ${selectedOptions.join('; ')}`;
+        }
+        fullMessage += fileSection;
 
         // Add sending status
         addSystemStatus({
             phase: 'sending',
             message: '[>] Transmitting payload...',
-            details: `${content.length} bytes`,
+            details: `${fullMessage.length} bytes`,
         });
         setPhase('sending');
 
-        // Add user message
+        // Add user message (display original text without file content)
         const userMsg: ChatMessage = {
             id: Date.now().toString(),
             role: 'user',
@@ -287,8 +307,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             message: '[✓] Sent successfully',
         });
 
-        // Clear selected options after sending
+        // Clear selected options and files after sending
         clearSelectedOptions();
+        clearFiles();
     },
 
     handleQuickAction: async (action) => {
@@ -308,6 +329,55 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     },
 
     clearSelectedOptions: () => set({ selectedOptions: [] }),
+
+    addFile: async (file: File) => {
+        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Add file in pending state
+        set((state) => ({
+            attachedFiles: [...state.attachedFiles, {
+                id,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                content: '',
+                status: 'pending',
+            }]
+        }));
+
+        try {
+            // Update to parsing
+            set((state) => ({
+                attachedFiles: state.attachedFiles.map(f =>
+                    f.id === id ? { ...f, status: 'parsing' as const } : f
+                )
+            }));
+
+            const content = await extractText(file);
+
+            // Update to ready
+            set((state) => ({
+                attachedFiles: state.attachedFiles.map(f =>
+                    f.id === id ? { ...f, content, status: 'ready' as const } : f
+                )
+            }));
+        } catch (err: any) {
+            // Update to error
+            set((state) => ({
+                attachedFiles: state.attachedFiles.map(f =>
+                    f.id === id ? { ...f, status: 'error' as const, error: err.message } : f
+                )
+            }));
+        }
+    },
+
+    removeFile: (fileId: string) => {
+        set((state) => ({
+            attachedFiles: state.attachedFiles.filter(f => f.id !== fileId)
+        }));
+    },
+
+    clearFiles: () => set({ attachedFiles: [] }),
 
     addSystemStatus: (status) => {
         const newStatus: SystemStatus = {
