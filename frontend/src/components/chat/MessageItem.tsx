@@ -64,7 +64,7 @@ function parseOptions(content: string): { mainText: string; options: string[] } 
 // Parse attachments from user message content
 function parseAttachments(content: string): { mainText: string; attachments: string[] } {
     const attachmentRegex = /---\s*附件:\s*([^\n]+)\s*---\n([\s\S]*?)(?=\n---\s*附件:|$)/g;
-    const attachments: string[] = [];
+    let attachments: string[] = [];
     let mainText = content;
 
     const matches = [...content.matchAll(attachmentRegex)];
