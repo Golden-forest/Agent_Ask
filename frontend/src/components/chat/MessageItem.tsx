@@ -61,17 +61,33 @@ function parseOptions(content: string): { mainText: string; options: string[] } 
     return { mainText, options };
 }
 
+// Parse attachments from user message content
+function parseAttachments(content: string): { mainText: string; attachments: string[] } {
+    const attachmentRegex = /---\s*附件:\s*([^\n]+)\s*---\n([\s\S]*?)(?=\n---\s*附件:|$)/g;
+    const attachments: string[] = [];
+    let mainText = content;
+
+    const matches = [...content.matchAll(attachmentRegex)];
+    if (matches.length > 0) {
+        attachments = matches.map(m => m[1].trim());
+        mainText = content.replace(attachmentRegex, '').trim();
+    }
+
+    return { mainText, attachments };
+}
+
 export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
     const isUser = message.role === 'user';
     const { selectedOptions, toggleOption } = useChatStore();
     const [copied, setCopied] = React.useState(false);
 
-    const { mainText, options } = useMemo(() => {
-        if (!isUser && !message.isStreaming) {
-            // Remove the code block containing options if it exists
+    const { mainText, options, attachments } = useMemo(() => {
+        if (isUser) {
+            const { mainText: text, attachments: att } = parseAttachments(message.content);
+            return { mainText: text, options: [], attachments: att };
+        }
+        if (!message.isStreaming) {
             let cleanContent = message.content;
-
-            // Remove various option formats from main text
             const optionsInlineRegex = /\*\*Option\s*\d+:\s*[^*]+\*\*[ \t]*:[ \t]*[^\n]*(\n(?!\*\*Option\s*\d+:)|$)/gi;
             const optionsBlockRegex = /```[\s\S]*?\*\*(?:Strategic )?Options\*\*[\s\S]*?```/i;
             const optionsListRegex = /\*\*(?:Strategic )?Options\*\*:\s*((?:- .+\n?)+)/i;
@@ -86,10 +102,11 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
 
             return {
                 mainText: cleanContent,
-                options: parseOptions(message.content).options
+                options: parseOptions(message.content).options,
+                attachments: [],
             };
         }
-        return { mainText: message.content, options: [] };
+        return { mainText: message.content, options: [], attachments: [] };
     }, [message.content, isUser, message.isStreaming]);
 
     const handleCopy = async () => {
@@ -146,7 +163,18 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
 
                 <div className={`prose prose-invert max-w-none ${isUser ? 'text-right' : 'text-left'}`}>
                     {isUser ? (
-                        <p className="whitespace-pre-wrap m-0 leading-relaxed">{message.content}</p>
+                        <div className="whitespace-pre-wrap m-0 leading-relaxed">
+                            <p>{mainText}</p>
+                            {attachments.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {attachments.map((name, i) => (
+                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface/50 border border-border/50 rounded text-xs text-textSecondary">
+                                            {name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         <ReactMarkdown>{mainText}</ReactMarkdown>
                     )}
