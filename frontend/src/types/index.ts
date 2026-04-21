@@ -32,3 +32,13 @@ export interface SystemStatus {
 }
 
 export type TerminalLog = SystemStatus;
+
+export interface AttachedFile {
+    id: string;
+    name: string;
+    size: number;
+    type: string;
+    content: string;
+    status: 'pending' | 'parsing' | 'ready' | 'error';
+    error?: string;
+}
