@@ -1,5 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import mammoth from 'mammoth';
+
+// Configure pdfjs-dist worker (required for v5.x)
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_TEXT_LENGTH = 50000;
