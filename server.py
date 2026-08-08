@@ -5,6 +5,8 @@ FastAPI后端服务
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import os
@@ -68,7 +70,7 @@ class RequirementAnalysis(BaseModel):
 
 # 全局变量
 llm = ChatOpenAI(
-    model="deepseek-chat",
+    model="deepseek-v4-flash",
     openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
     openai_api_base=os.getenv("DEEPSEEK_BASE_URL"),
     streaming=False
@@ -169,7 +171,7 @@ async def chat_message(sid, data):
 
 **澄清问题格式**：
 ```
-🔍 **Question**: [针对用户需求的澄清问题]
+**Question**: [针对用户需求的澄清问题]
 
 **Strategic Options**:
 - [选项1：具体的方向或方法]
@@ -177,18 +179,18 @@ async def chat_message(sid, data):
 - [选项3：其他考虑因素]
 - [选项4：补充性的建议]
 
-💡 **Action**: 选择一个或多个选项，或描述你的想法
+**Action**: 选择一个或多个选项，或描述你的想法
 ```
 
 **最终结果格式（用户说Accept时使用）**：
 ```
-✅ **Requirement Summary**:
+**Requirement Summary**:
 [基于对话总结的清晰需求描述]
 
-🚀 **Optimized Prompt**:
+**Optimized Prompt**:
 [专业、完整、可直接使用的优化提示词]
 
-📋 **Implementation Notes**:
+**Implementation Notes**:
 [使用建议和注意事项]
 ```
 
@@ -212,9 +214,9 @@ async def chat_message(sid, data):
         await sio.emit('error', {'message': str(e)}, room=sid)
 
 # REST API 路由
-@app.get("/")
-async def root():
-    """根路径"""
+@app.get("/api")
+async def api_info():
+    """API 信息接口"""
     return {
         "message": "需求澄清助手API服务运行中 (支持WebSocket)",
         "version": "1.0.0",
@@ -276,7 +278,7 @@ Follow these rules strictly:
 
 Response format (Normal):
 ```
-🔍 **Question**: [Your question here]
+**Question**: [Your question here]
 
 **Options**:
 - [Option 1 text]
@@ -284,15 +286,15 @@ Response format (Normal):
 - [Option 3 text]
 - [Option 4 text]
 
-💡 You can select one or more options above, or describe in your own words
+You can select one or more options above, or describe in your own words
 ```
 
 Response format (When user says "Accept"):
 ```
-✅ **Requirement Summary**:
+**Requirement Summary**:
 [Brief summary of the clarified requirements]
 
-🚀 **Optimized Prompt**:
+**Optimized Prompt**:
 [The final, detailed prompt that the user can use]
 ```
 
@@ -421,6 +423,30 @@ async def get_stats():
         "average_messages_per_conversation": total_messages / total_conversations if total_conversations > 0 else 0,
         "active_conversations": len([conv for conv in conversations.values() if len(conv) > 0])
     }
+
+# ==================== 前端静态文件服务 ====================
+# 构建：cd frontend && npm run build → 输出到 frontend/dist/
+# 后端同时服务前端页面 + WebSocket，一个端口搞定
+
+FRONTEND_DIST = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+
+if os.path.isdir(FRONTEND_DIST):
+    # 挂载 /assets 静态资源
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        """所有非 API 路径返回前端页面（支持前端路由）"""
+        # 如果请求的是具体文件且存在，直接返回
+        file_path = os.path.join(FRONTEND_DIST, full_path)
+        if full_path and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # 其他所有情况返回 index.html（SPA fallback）
+        index_path = os.path.join(FRONTEND_DIST, "index.html")
+        if os.path.isfile(index_path):
+            return FileResponse(index_path)
+        return {"error": "frontend not built. Run: cd frontend && npm run build"}
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -7,6 +7,18 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',  // 监听所有网络接口，允许局域网访问
     port: 5173,
-    strictPort: false,  // 如果端口被占用，自动尝试下一个可用端口
+    strictPort: false,
+    // 开发模式：把 WebSocket 和 API 请求代理到后端 8000
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:8000',
+        ws: true,
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   },
 })

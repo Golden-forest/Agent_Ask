@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import { Button } from '../ui/Button';
-import { Send, X, Plus } from 'lucide-react';
+import { Send, X, Paperclip } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { isSupportedFile, formatSize } from '../../services/fileParser';
 import toast from 'react-hot-toast';
@@ -165,7 +165,7 @@ export const ChatInput: React.FC = () => {
                         className="h-9 w-9 p-0 rounded-xl flex items-center justify-center transition-all shrink-0 bg-surfaceHover text-textSecondary hover:text-text hover:bg-surface border border-border/50"
                         title="Attach file"
                     >
-                        <Plus className="w-4 h-4 shrink-0" />
+                        <Paperclip className="w-4 h-4 shrink-0" />
                     </button>
                     <Button
                         type="button"

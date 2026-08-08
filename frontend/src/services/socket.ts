@@ -24,10 +24,9 @@ class SocketService {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
 
     private getUrl(): string {
-        const hostname = window.location.hostname;
-        return hostname === 'localhost' || hostname === '127.0.0.1'
-            ? 'http://localhost:8000'
-            : `http://${hostname}:8000`;
+        // 同源连接：前端和后端在同一个端口，部署时由后端统一服务
+        // 开发模式（vite dev server）走 vite proxy，也走同源
+        return window.location.origin;
     }
 
     connect() {

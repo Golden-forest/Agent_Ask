@@ -9,6 +9,17 @@ interface MessageItemProps {
     message: ChatMessage;
 }
 
+// Strip markdown formatting from option text
+function stripMarkdown(text: string): string {
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '$1')   // **bold**
+        .replace(/__(.+?)__/g, '$1')        // __underline__
+        .replace(/`([^`]+)`/g, '$1')        // `code`
+        .replace(/\*([^*]+)\*/g, '$1')      // *italic*
+        .replace(/_([^_]+)_/g, '$1')        // _italic_
+        .trim();
+}
+
 // Parse options from message content
 function parseOptions(content: string): { mainText: string; options: string[] } {
     // Pattern 1: Traditional bullet list format
@@ -28,7 +39,7 @@ function parseOptions(content: string): { mainText: string; options: string[] } 
     if (inlineMatches.length > 0) {
         options = inlineMatches.map(match => {
             const [, , title, description] = match;
-            return `${title.trim()}: ${description.trim()}`;
+            return stripMarkdown(`${title.trim()}: ${description.trim()}`);
         });
 
         // Remove inline options from main text
@@ -45,9 +56,8 @@ function parseOptions(content: string): { mainText: string; options: string[] } 
                     .map(line => {
                         // Remove the bullet and clean up
                         let option = line.replace(/^-\s*/, '').trim();
-                        // Remove any leading "Option X:" format for cleaner display
                         option = option.replace(/^Option\s*\d+:\s*/i, '');
-                        return option;
+                        return stripMarkdown(option);
                     })
                     .filter(Boolean);
 

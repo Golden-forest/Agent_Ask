@@ -275,7 +275,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         // Build full message with selected options and file content
         let fullMessage = content;
-        if (selectedOptions.length > 0) {
+        // Accept 时只发送 "Accept"，不拼接选项（后端严格匹配）
+        if (selectedOptions.length > 0 && content.trim().toLowerCase() !== 'accept') {
             fullMessage += `\n\nSelected options: ${selectedOptions.join('; ')}`;
         }
         fullMessage += fileSection;

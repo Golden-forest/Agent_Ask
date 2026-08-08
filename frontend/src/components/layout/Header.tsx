@@ -1,9 +1,12 @@
 import React from 'react';
 import { useChatStore } from '../../store/chatStore';
-import { Plus } from 'lucide-react';
+import { Plus, TerminalSquare } from 'lucide-react';
 
 export const Header: React.FC = () => {
     const newConversation = useChatStore((state) => state.newConversation);
+    const showTerminalLog = useChatStore((state) => state.showTerminalLog);
+    const toggleTerminalLog = useChatStore((state) => state.toggleTerminalLog);
+    const systemStatusLength = useChatStore((state) => state.systemStatus.length);
 
     const handleNewConversation = () => {
         newConversation();
@@ -24,7 +27,16 @@ export const Header: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+                {systemStatusLength > 0 && (
+                    <button
+                        onClick={toggleTerminalLog}
+                        className={`w-9 h-9 rounded-lg border transition-all flex items-center justify-center ${showTerminalLog ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface border-border/50 text-textSecondary hover:text-text'}`}
+                        title={showTerminalLog ? 'Hide terminal log' : 'Show terminal log'}
+                    >
+                        <TerminalSquare className="w-4 h-4" />
+                    </button>
+                )}
                 <button
                     onClick={handleNewConversation}
                     className="w-9 h-9 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center group"
