@@ -37,6 +37,9 @@ build/
 dist/
 *.egg-info/
 
+# Runtime
+*.pid
+
 # OS
 .DS_Store
 Thumbs.db
