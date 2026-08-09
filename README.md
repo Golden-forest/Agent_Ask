@@ -2,6 +2,8 @@
 
 > A privacy-first PWA that turns vague ideas into crystal-clear prompts. Bring your own API key — no server, no signup, no data collection.
 
+**Live Demo: [agent-ask.pages.dev](https://agent-ask.pages.dev/)**
+
 ---
 
 ## What It Does
@@ -74,7 +76,7 @@ After that, you can start chatting immediately.
 
 | Provider | API Endpoint | Preset Models | Get API Key |
 |----------|-------------|---------------|-------------|
-| DeepSeek | `api.deepseek.com` | deepseek-chat, deepseek-reasoner | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| DeepSeek | `api.deepseek.com` | deepseek-v4-flash, deepseek-v4-pro | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
 | OpenAI | `api.openai.com` | gpt-4o, gpt-4o-mini, gpt-4.1, o3-mini | [platform.openai.com](https://platform.openai.com/api-keys) |
 | Qwen | `dashscope.aliyuncs.com/compatible-mode` | qwen-plus, qwen-max, qwen-turbo, qwq-32b | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com/apiKey) |
 | Custom | Your base URL | Your model ID | — |
@@ -89,9 +91,9 @@ Since Agent Ask is a static PWA, you can host it on any static hosting platform:
 
 | Platform | Command | Notes |
 |----------|---------|-------|
+| Cloudflare Pages | `npx wrangler pages deploy frontend/dist --project-name=agent-ask` | Direct upload, no repo connection needed |
 | GitHub Pages | Push `frontend/dist/` to `gh-pages` branch | Set `base` in `vite.config.ts` if not deploying to root domain |
 | Vercel | `vercel --prod` in `frontend/` | Zero config |
-| Cloudflare Pages | Connect repo, set build output to `frontend/dist` | Zero config |
 | Netlify | Drag `frontend/dist/` folder | Zero config |
 
 ---
@@ -117,7 +119,7 @@ Since Agent Ask is a static PWA, you can host it on any static hosting platform:
 
 ```
 agent_ask/
-├── frontend/                  # The entire application
+├── frontend/                  # The entire application (PWA)
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── chat/          # Chat UI (messages, input, loading)
@@ -139,11 +141,11 @@ agent_ask/
 │   ├── public/                # Static assets (icons)
 │   ├── vite.config.ts         # Vite + PWA config
 │   └── package.json
-├── docs/                      # Design documents
-└── README.md
+├── README.md
+└── (legacy Python files: server.py, search.py, config.py, run.py — not used by the PWA)
 ```
 
-> The old Python backend (`server.py`, `search.py`, `config.py`) has been retired. It remains in git history for reference.
+> The PWA in `frontend/` is fully self-contained. The root-level Python files (`server.py`, `search.py`, `config.py`, `run.py`, `requirements.txt`) are leftovers from an earlier full-stack version and are not needed to run or build the app.
 
 ---
 
