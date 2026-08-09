@@ -43,3 +43,9 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Wrangler / Cloudflare local state
+.wrangler/
+
+# Superpowers brainstorming sessions
+.superpowers/

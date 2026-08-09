@@ -141,7 +141,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                 className={`
           max-w-[85%] md:max-w-[75%] rounded-2xl p-6 shadow-sm relative group
           ${isUser
-                        ? 'bg-surface/50 backdrop-blur-sm text-text border border-border/50'
+                        ? 'bg-surface text-text border border-border/50'
                         : 'bg-transparent text-text pl-0'
                     }
         `}
@@ -149,7 +149,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                 {!isUser && (
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-surface/50 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg shadow-primary/20">
+                            <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center">
                                 <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-6 h-6 rounded-md" />
                             </div>
                             <span className="font-semibold text-sm tracking-wide text-text/90">agent_ask</span>
@@ -158,11 +158,11 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                         {isOptimizedPrompt && !message.isStreaming && (
                             <button
                                 onClick={handleCopy}
-                                className="p-2 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-primary hover:border-primary/50 transition-all opacity-0 group-hover:opacity-100"
+                                className="p-2 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-text hover:border-white/20 transition-all opacity-0 group-hover:opacity-100"
                                 title="Copy Optimized Prompt"
                             >
                                 {copied ? (
-                                    <Check className="w-4 h-4 text-green-500" />
+                                    <Check className="w-4 h-4 text-white" />
                                 ) : (
                                     <Copy className="w-4 h-4" />
                                 )}
