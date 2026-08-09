@@ -1,12 +1,14 @@
 import React from 'react';
 import { useChatStore } from '../../store/chatStore';
-import { Plus, TerminalSquare } from 'lucide-react';
+import { Plus, Settings, TerminalSquare } from 'lucide-react';
+import { useSettingsStore } from '../../store/settingsStore';
 
 export const Header: React.FC = () => {
     const newConversation = useChatStore((state) => state.newConversation);
     const showTerminalLog = useChatStore((state) => state.showTerminalLog);
     const toggleTerminalLog = useChatStore((state) => state.toggleTerminalLog);
     const systemStatusLength = useChatStore((state) => state.systemStatus.length);
+    const setSettingsModalOpen = useSettingsStore((state) => state.setModalOpen);
 
     const handleNewConversation = () => {
         newConversation();
@@ -15,14 +17,14 @@ export const Header: React.FC = () => {
     return (
         <header className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border/50 z-50 flex items-center justify-between px-6">
             <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface/50 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg shadow-primary/20">
+                <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center">
                     <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-7 h-7 rounded-md" />
                 </div>
                 <div>
-                    <p className="text-lg font-semibold tracking-tight">
-                        <span className="text-emerald-500">Ask Smarter</span>
+                    <p className="text-lg font-semibold tracking-tight text-text">
+                        <span>Ask Smarter</span>
                         <span className="text-textSecondary mx-1.5">•</span>
-                        <span className="text-cyan-500">Create Faster</span>
+                        <span>Create Faster</span>
                     </p>
                 </div>
             </div>
@@ -31,15 +33,22 @@ export const Header: React.FC = () => {
                 {systemStatusLength > 0 && (
                     <button
                         onClick={toggleTerminalLog}
-                        className={`w-9 h-9 rounded-lg border transition-all flex items-center justify-center ${showTerminalLog ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surface border-border/50 text-textSecondary hover:text-text'}`}
+                        className={`w-9 h-9 rounded-lg border transition-all flex items-center justify-center ${showTerminalLog ? 'bg-white/10 border-white/20 text-white' : 'bg-surface border-border/50 text-textSecondary hover:text-text'}`}
                         title={showTerminalLog ? 'Hide terminal log' : 'Show terminal log'}
                     >
                         <TerminalSquare className="w-4 h-4" />
                     </button>
                 )}
                 <button
+                    onClick={() => setSettingsModalOpen(true)}
+                    className="w-9 h-9 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-text hover:bg-surfaceHover transition-all flex items-center justify-center"
+                    title="Settings"
+                >
+                    <Settings className="w-4 h-4" />
+                </button>
+                <button
                     onClick={handleNewConversation}
-                    className="w-9 h-9 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center group"
+                    className="w-9 h-9 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-text hover:bg-surfaceHover transition-all flex items-center justify-center"
                     title="New Conversation"
                 >
                     <Plus className="w-4 h-4" />
