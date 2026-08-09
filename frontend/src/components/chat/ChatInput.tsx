@@ -1,4 +1,5 @@
 import React, { useRef, useCallback } from 'react';
+import { Button } from '../ui/Button';
 import { Send, X, Paperclip } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { isSupportedFile, formatSize } from '../../services/fileParser';
@@ -86,12 +87,12 @@ export const ChatInput: React.FC = () => {
                     {selectedOptions.map((option: string, index: number) => (
                         <div
                             key={index}
-                            className="px-2.5 py-1 bg-white/10 border border-white/20 text-white rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
+                            className="px-2.5 py-1 bg-primary/10 border border-primary/30 text-primary rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
                         >
                             <span>{option}</span>
                             <button
                                 onClick={() => toggleOption(option)}
-                                className="hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                                className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
                             >
                                 <X className="w-3 h-3" />
                             </button>
@@ -106,19 +107,19 @@ export const ChatInput: React.FC = () => {
                     {attachedFiles.map((file) => (
                         <div
                             key={file.id}
-                            className="px-2.5 py-1.5 bg-surface border border-border rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
+                            className="px-2.5 py-1.5 bg-surface/80 border border-border/50 rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
                         >
                             {file.status === 'pending' && (
                                 <span className="text-textSecondary">Loading {file.name}...</span>
                             )}
                             {file.status === 'parsing' && (
-                                <span className="text-textSecondary animate-pulse">Parsing {file.name}...</span>
+                                <span className="text-yellow-500">Parsing {file.name}...</span>
                             )}
                             {file.status === 'ready' && (
-                                <span className="text-text">[{formatSize(file.size)}] {file.name}</span>
+                                <span className="text-green-500">[{formatSize(file.size)}] {file.name}</span>
                             )}
                             {file.status === 'error' && (
-                                <span className="text-textSecondary line-through" title={file.error}>{file.name}: {file.error}</span>
+                                <span className="text-red-500" title={file.error}>{file.name}: {file.error}</span>
                             )}
                             <button
                                 onClick={() => removeFile(file.id)}
@@ -132,7 +133,7 @@ export const ChatInput: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit}
-                className={`relative flex items-end gap-2 bg-surface border rounded-2xl p-1.5 shadow-lg shadow-black/20 focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/10 transition-all duration-200 ${isDragOver ? 'border-white/20 ring-2 ring-white/10' : 'border-border'}`}
+                className={`relative flex items-end gap-2 bg-surface/80 backdrop-blur-md border rounded-2xl p-1.5 shadow-lg shadow-black/20 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all duration-200 ${isDragOver ? 'border-primary/50 ring-2 ring-primary/20' : 'border-border'}`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -166,24 +167,26 @@ export const ChatInput: React.FC = () => {
                     >
                         <Paperclip className="w-4 h-4 shrink-0" />
                     </button>
-                    <button
+                    <Button
                         type="button"
                         onClick={() => sendMessage('Accept')}
                         disabled={isLoading}
-                        className="h-9 px-3 rounded-xl flex items-center justify-center bg-white/5 text-text hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-sm font-medium"
+                        className="h-9 px-3 rounded-xl flex items-center justify-center bg-green-600/10 text-green-500 hover:bg-green-600/20 border border-green-600/30 transition-all text-sm font-medium"
                         title="Accept & Generate Prompt"
                     >
                         Accept
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="submit"
                         disabled={!canSend}
-                        className={`h-9 w-9 p-0 rounded-xl flex items-center justify-center transition-all shrink-0
-                            ${canSend ? 'bg-primary text-background' : 'bg-surfaceHover text-textSecondary cursor-not-allowed'}
+                        className={`
+                            h-9 w-9 p-0 rounded-xl flex items-center justify-center transition-all shrink-0
+                            ${canSend ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-surfaceHover text-textSecondary'}
                         `}
+                        variant={canSend ? 'primary' : 'ghost'}
                     >
                         <Send className="w-4 h-4 shrink-0" />
-                    </button>
+                    </Button>
                 </div>
             </form>
             <div className="text-center mt-2 text-xs text-textSecondary">

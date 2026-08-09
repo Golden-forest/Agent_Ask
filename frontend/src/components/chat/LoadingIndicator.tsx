@@ -1,6 +1,12 @@
 import React from 'react';
 
-export const LoadingIndicator: React.FC = () => {
+interface LoadingIndicatorProps {
+    isSearching?: boolean;
+}
+
+export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ isSearching = false }) => {
+    const message = isSearching ? 'Agent is searching...' : 'Agent is responding...';
+
     return (
         <div className="flex items-start gap-3 px-2 py-3 animate-fade-in">
             {/* Avatar */}
@@ -15,7 +21,7 @@ export const LoadingIndicator: React.FC = () => {
             {/* Message content */}
             <div className="flex-1">
                 <div className="inline-flex items-center gap-2 bg-surface/80 border border-border rounded-2xl px-4 py-3 max-w-fit">
-                    <span className="text-text text-sm">Agent is responding...</span>
+                    <span className="text-text text-sm">{message}</span>
 
                     {/* Typing dots animation */}
                     <div className="flex items-center gap-1 ml-1">

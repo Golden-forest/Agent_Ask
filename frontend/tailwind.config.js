@@ -8,20 +8,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Monochrome Dark Theme
-        background: '#0F1117',
-        surface: '#1A1D24',
-        surfaceHover: '#262932',
-        primary: '#FFFFFF',       // Pure white as primary accent
-        primaryHover: '#E4E4E7',  // Light gray for hover
-        text: '#F4F4F5',
-        textSecondary: '#9CA3AF',
-        border: '#27272A',
-        success: '#FFFFFF',       // Mono: use icons, not colors
-        error: '#FFFFFF',
+        // Premium Dark Theme Colors
+        background: '#0F1117', // Deeper, richer dark blue-black
+        surface: '#1E212B',    // Slightly lighter blue-grey for cards
+        surfaceHover: '#2A2E3B',
+        primary: '#6366F1',    // Indigo-500 for a sophisticated accent (was #0066cc)
+        primaryHover: '#4F46E5',
+        text: '#F3F4F6',       // Gray-100, softer than pure white
+        textSecondary: '#9CA3AF', // Gray-400
+        border: '#2E3344',     // Subtle border
+        success: '#10B981',    // Emerald-500
+        error: '#EF4444',      // Red-500
       },
       fontFamily: {
-        'sans': ['SF Pro Rounded', 'SF Pro Display', '-apple-system', 'Inter', 'system-ui', 'sans-serif'],
+        'sans': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

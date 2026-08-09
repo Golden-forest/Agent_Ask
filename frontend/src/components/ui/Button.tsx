@@ -15,7 +15,7 @@ export const Button: React.FC<ButtonProps> = ({
     const baseStyles = "inline-flex items-center justify-center rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
-        primary: "bg-primary text-background hover:bg-primaryHover",
+        primary: "bg-primary text-white hover:bg-blue-600 shadow-lg shadow-primary/20",
         secondary: "bg-surface text-text hover:bg-surfaceHover border border-border/50",
         ghost: "bg-transparent text-text hover:bg-surfaceHover",
         outline: "bg-transparent border border-border text-text hover:bg-surfaceHover"

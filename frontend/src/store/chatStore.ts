@@ -1,15 +1,13 @@
 import { create } from 'zustand';
 import type { ChatMessage, QuickActionType, SystemStatus, SystemPhase } from '../types';
-import { streamChat, LlmError } from '../services/llm';
-import { buildApiMessages } from '../services/promptTemplate';
-import { useSettingsStore } from './settingsStore';
-import toast from 'react-hot-toast';
+import { socketService } from '../services/socket';
 import type { AttachedFile } from '../types';
 import { extractText } from '../services/fileParser';
 
 interface ChatStore {
     messages: ChatMessage[];
     isLoading: boolean;
+    isSearching: boolean;
     input: string;
     currentConversationId: string | null;
     selectedOptions: string[];
@@ -17,19 +15,19 @@ interface ChatStore {
     currentPhase: SystemPhase;
     showTerminalLog: boolean;
     attachedFiles: AttachedFile[];
-    isStreaming: boolean;
-    abortController: AbortController | null;
+    _socketInitialized: boolean;
     addFile: (file: File) => Promise<void>;
     removeFile: (fileId: string) => void;
     clearFiles: () => void;
     setInput: (input: string) => void;
     addMessage: (message: ChatMessage) => void;
     setLoading: (loading: boolean) => void;
+    setSearching: (searching: boolean) => void;
     clearChat: () => void;
     newConversation: () => void;
     sendMessage: (content: string) => Promise<void>;
     handleQuickAction: (action: QuickActionType) => Promise<void>;
-    stopStreaming: () => void;
+    initSocket: () => void;
     toggleOption: (option: string) => void;
     clearSelectedOptions: () => void;
     addSystemStatus: (status: Omit<SystemStatus, 'id' | 'timestamp'>) => void;
@@ -48,6 +46,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
     ],
     isLoading: false,
+    isSearching: false,
     input: '',
     currentConversationId: null,
     selectedOptions: [],
@@ -55,8 +54,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     currentPhase: 'idle',
     showTerminalLog: true,
     attachedFiles: [],
-    isStreaming: false,
-    abortController: null,
+    _socketInitialized: false,
 
     setInput: (input) => set({ input }),
 
@@ -64,14 +62,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     setLoading: (loading) => set({ isLoading: loading }),
 
+    setSearching: (searching) => set({ isSearching: searching }),
+
     clearChat: () => set({ messages: [], currentConversationId: null }),
 
     newConversation: () => {
-        // 如果正在流式输出，先中止
-        const { abortController } = get();
-        if (abortController) {
-            abortController.abort();
-        }
+        socketService.disconnect();
         set({
             messages: [
                 {
@@ -85,29 +81,187 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             selectedOptions: [],
             input: '',
             isLoading: false,
-            isStreaming: false,
-            abortController: null,
+            isSearching: false,
             attachedFiles: [],
+            _socketInitialized: false,
+        });
+    },
+
+    initSocket: () => {
+        const { addSystemStatus, setPhase } = get();
+
+        // Skip if already initialized
+        if (get()._socketInitialized) return;
+
+        socketService.connect();
+        get()._socketInitialized = true;
+
+        // Add connection status
+        addSystemStatus({
+            phase: 'connecting',
+            message: '[CONNECT] → Establishing secure connection...',
+            details: 'Host: localhost:8000'
+        });
+
+        socketService.on('connect', () => {
+            addSystemStatus({
+                phase: 'complete',
+                message: '[✓] Connection established',
+                details: '12ms',
+                metadata: { latency: 12 }
+            });
+            setPhase('idle');
+        });
+
+        socketService.on('stream_chunk', (data: { content: string; conversation_id: string }) => {
+            // Update streaming status on first chunk
+            if (get().currentPhase !== 'streaming') {
+                addSystemStatus({
+                    phase: 'streaming',
+                    message: '[STREAM] Receiving AI response...',
+                });
+                setPhase('streaming');
+            }
+
+            set((state) => {
+                const messages = [...state.messages];
+                const lastMessage = messages[messages.length - 1];
+
+                if (lastMessage && lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+                    // Append to existing streaming message
+                    return {
+                        messages: [
+                            ...messages.slice(0, -1),
+                            { ...lastMessage, content: lastMessage.content + data.content }
+                        ]
+                    };
+                } else {
+                    // Start new streaming message (for backward compatibility)
+                    return {
+                        messages: [
+                            ...messages,
+                            {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                content: data.content,
+                                timestamp: new Date(),
+                                isStreaming: true
+                            }
+                        ]
+                    };
+                }
+            });
+        });
+
+        socketService.on('stream_complete', (data: { full_content: string; conversation_id: string; search_info?: string }) => {
+            set((state) => {
+                const messages = [...state.messages];
+                const lastMessage = messages[messages.length - 1];
+
+                if (lastMessage && lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+                    // Update existing streaming message
+                    return {
+                        messages: [
+                            ...messages.slice(0, -1),
+                            {
+                                ...lastMessage,
+                                content: data.full_content,
+                                searchInfo: data.search_info,
+                                isStreaming: false,
+                            }
+                        ],
+                        isLoading: false,
+                        currentConversationId: data.conversation_id
+                    };
+                } else if (lastMessage && lastMessage.role === 'assistant') {
+                    // Update existing non-streaming message (for non-streaming mode)
+                    return {
+                        messages: [
+                            ...messages.slice(0, -1),
+                            {
+                                ...lastMessage,
+                                content: data.full_content,
+                                searchInfo: data.search_info,
+                                isStreaming: false,
+                            }
+                        ],
+                        isLoading: false,
+                        currentConversationId: data.conversation_id
+                    };
+                } else {
+                    // Create new message (no streaming message exists)
+                    return {
+                        messages: [
+                            ...messages,
+                            {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                content: data.full_content,
+                                timestamp: new Date(),
+                                searchInfo: data.search_info,
+                                isStreaming: false,
+                            }
+                        ],
+                        isLoading: false,
+                        currentConversationId: data.conversation_id
+                    };
+                }
+            });
+
+            // Set phase to complete after streaming finishes
+            setPhase('complete');
+        });
+
+        socketService.on('search_status', (data: { status: 'searching' | 'completed' | 'error'; info?: string; error?: string }) => {
+            const { setSearching } = get();
+
+            if (data.status === 'searching') {
+                addSystemStatus({
+                    phase: 'searching',
+                    message: '[SEARCH] → Querying knowledge graph...',
+                });
+                setSearching(true);
+                setPhase('searching');
+            } else if (data.status === 'completed') {
+                addSystemStatus({
+                    phase: 'complete',
+                    message: '[✓] Search complete',
+                    details: `${data.info?.length || 0} bytes retrieved`,
+                });
+                setSearching(false);
+            } else if (data.status === 'error') {
+                addSystemStatus({
+                    phase: 'error',
+                    message: '[!] Search failed',
+                    details: data.error,
+                });
+                setSearching(false);
+            }
+
+            console.log('Search status:', data);
+        });
+
+        socketService.on('error', (data: { message: string }) => {
+            console.error('Socket error:', data);
+            addSystemStatus({
+                phase: 'error',
+                message: '[!] Socket error',
+                details: data.message,
+            });
+            set({ isLoading: false, isSearching: false });
+            setPhase('error');
         });
     },
 
     sendMessage: async (content) => {
-        const { addMessage, setLoading, messages, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase, attachedFiles, clearFiles } = get();
+        const { addMessage, setLoading, messages, currentConversationId, initSocket, selectedOptions, clearSelectedOptions, addSystemStatus, setPhase, attachedFiles, clearFiles } = get();
         if (!content.trim() && selectedOptions.length === 0 && attachedFiles.length === 0) return;
 
-        // 检查 API Key
-        const settings = useSettingsStore.getState().settings;
-        if (!settings.apiKey.trim()) {
-            toast.error('未配置 API Key，请先前往设置');
-            useSettingsStore.getState().setModalOpen(true);
-            return;
-        }
+        // Ensure socket is connected
+        initSocket();
 
-        // 检查网络
-        if (!navigator.onLine) {
-            toast.error('网络不可用');
-            return;
-        }
+        // Reset states when sending new message
+        set({ isSearching: false });
 
         // Build file content section
         let fileSection = '';
@@ -119,8 +273,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             fileSection = '\n\n' + fileBlocks.join('\n\n');
         }
 
-        // Build full message
+        // Build full message with selected options and file content
         let fullMessage = content;
+        // Accept 时只发送 "Accept"，不拼接选项（后端严格匹配）
         if (selectedOptions.length > 0 && content.trim().toLowerCase() !== 'accept') {
             fullMessage += `\n\nSelected options: ${selectedOptions.join('; ')}`;
         }
@@ -134,7 +289,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
         setPhase('sending');
 
-        // Add user message
+        // Add user message (display original text without file content)
         const userMsg: ChatMessage = {
             id: Date.now().toString(),
             role: 'user',
@@ -145,160 +300,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         set({ input: '' });
         setLoading(true);
 
-        // Create assistant message placeholder for streaming
-        const assistantMsg: ChatMessage = {
-            id: `${Date.now()}-assistant`,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-            isStreaming: true,
-        };
-        addMessage(assistantMsg);
+        // Emit to socket
+        socketService.emit('chat_message', {
+            message: fullMessage,
+            history: messages.map(m => ({
+                role: m.role,
+                content: m.content,
+                id: m.id,
+                timestamp: m.timestamp
+            })),
+            conversation_id: currentConversationId || undefined
+        });
 
-        // Clear selected options and files
+        // Add sent status
+        addSystemStatus({
+            phase: 'complete',
+            message: '[✓] Sent successfully',
+        });
+
+        // Clear selected options and files after sending
         clearSelectedOptions();
         clearFiles();
-
-        // Create AbortController
-        const ac = new AbortController();
-        set({ abortController: ac, isStreaming: true });
-
-        try {
-            // Build API messages
-            const apiMessages = buildApiMessages(fullMessage, messages);
-
-            // Stream response
-            let firstChunk = true;
-            let receivedContent = '';
-
-            for await (const chunk of streamChat(apiMessages, settings, ac.signal)) {
-                if (firstChunk) {
-                    firstChunk = false;
-                    addSystemStatus({
-                        phase: 'streaming',
-                        message: '[STREAM] Receiving AI response...',
-                    });
-                    setPhase('streaming');
-                }
-                receivedContent += chunk;
-
-                // Append chunk to assistant message
-                set((state) => {
-                    const msgs = [...state.messages];
-                    const lastIdx = msgs.length - 1;
-                    if (lastIdx >= 0 && msgs[lastIdx].role === 'assistant' && msgs[lastIdx].isStreaming) {
-                        msgs[lastIdx] = { ...msgs[lastIdx], content: receivedContent };
-                    }
-                    return { messages: msgs };
-                });
-            }
-
-            // Streaming complete
-            set((state) => {
-                const msgs = [...state.messages];
-                const lastIdx = msgs.length - 1;
-                if (lastIdx >= 0 && msgs[lastIdx].role === 'assistant') {
-                    msgs[lastIdx] = {
-                        ...msgs[lastIdx],
-                        content: receivedContent || '未收到有效回复，请重试',
-                        isStreaming: false,
-                    };
-                }
-                return { messages: msgs };
-            });
-
-            addSystemStatus({
-                phase: 'complete',
-                message: '[✓] Response complete',
-            });
-            setPhase('complete');
-
-        } catch (err: any) {
-            if (err instanceof LlmError) {
-                // Handle known errors
-                switch (err.code) {
-                    case 'aborted':
-                        // User aborted - keep partial content, mark as not streaming
-                        set((state) => {
-                            const msgs = [...state.messages];
-                            const lastIdx = msgs.length - 1;
-                            if (lastIdx >= 0 && msgs[lastIdx].role === 'assistant') {
-                                msgs[lastIdx] = {
-                                    ...msgs[lastIdx],
-                                    content: msgs[lastIdx].content || '请求已取消',
-                                    isStreaming: false,
-                                };
-                            }
-                            return { messages: msgs };
-                        });
-                        addSystemStatus({
-                            phase: 'complete',
-                            message: '[!] Request cancelled by user',
-                        });
-                        break;
-
-                    case 'auth':
-                        toast.error('API Key 无效');
-                        useSettingsStore.getState().setModalOpen(true);
-                        // Remove the empty assistant message
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                        break;
-
-                    case 'forbidden':
-                        toast.error('Key 无权限访问该模型');
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                        break;
-
-                    case 'rate_limit':
-                        toast.error('请求过于频繁，请稍后重试');
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                        break;
-
-                    case 'server':
-                        toast.error('服务暂时不可用');
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                        break;
-
-                    case 'network':
-                        toast.error('无法连接服务器');
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                        break;
-
-                    default:
-                        toast.error(err.message);
-                        set((state) => ({
-                            messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                        }));
-                }
-            } else {
-                console.error('Unexpected error:', err);
-                toast.error(`未知错误: ${err.message}`);
-                set((state) => ({
-                    messages: state.messages.filter(m => m.id !== assistantMsg.id)
-                }));
-            }
-
-            setPhase('error');
-        } finally {
-            set({ isLoading: false, isStreaming: false, abortController: null });
-        }
-    },
-
-    stopStreaming: () => {
-        const { abortController } = get();
-        if (abortController) {
-            abortController.abort();
-        }
     },
 
     handleQuickAction: async (action) => {

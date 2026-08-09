@@ -42,35 +42,3 @@ export interface AttachedFile {
     status: 'pending' | 'parsing' | 'ready' | 'error';
     error?: string;
 }
-
-// ============ LLM Provider Types ============
-
-export type ProviderId = 'deepseek' | 'openai' | 'qwen' | 'custom';
-
-export interface ModelOption {
-  id: string;
-  name: string;
-}
-
-export interface Provider {
-  id: ProviderId;
-  name: string;
-  baseUrl: string;
-  apiKeyUrl: string;
-  models: ModelOption[];
-  defaultModel: string;
-}
-
-export interface LlmSettings {
-  provider: ProviderId;
-  apiKey: string;
-  model: string;
-  customBaseUrl: string;
-  customModel: string;
-}
-
-// OpenAI API message format
-export interface ApiMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}

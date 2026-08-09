@@ -6,6 +6,17 @@ interface TerminalLogProps {
   maxLogs?: number;
 }
 
+const phaseColors: Record<SystemStatus['phase'], string> = {
+  idle: 'text-gray-400',
+  connecting: 'text-cyan-400',
+  sending: 'text-blue-400',
+  searching: 'text-yellow-400',
+  inferring: 'text-purple-400',
+  streaming: 'text-green-400',
+  complete: 'text-green-500',
+  error: 'text-red-400',
+};
+
 export const TerminalLog: React.FC<TerminalLogProps> = ({
   logs,
   maxLogs = 20
@@ -14,31 +25,31 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
 
   if (displayLogs.length === 0) {
     return (
-      <div className="font-mono text-xs text-textSecondary p-2 animate-fade-in">
-        <span className="text-text">$</span> System ready...
+      <div className="font-mono text-xs text-gray-500 p-2 animate-fade-in">
+        <span className="text-green-500">$</span> System ready...
         <span className="animate-blink">_</span>
       </div>
     );
   }
 
   return (
-    <div className="font-mono text-xs space-y-1 p-2 bg-black/40 rounded border border-border/50">
+    <div className="font-mono text-xs space-y-1 p-2 bg-black/50 rounded border border-green-900/30">
       {displayLogs.map((log, index) => (
         <div
           key={log.id}
-          className="text-textSecondary hover:bg-white/5 px-1 rounded transition-colors animate-fade-in"
+          className={`${phaseColors[log.phase]} hover:bg-white/5 px-1 rounded transition-colors animate-fade-in`}
           style={{ animationDelay: `${index * 50}ms` }}
         >
           <div className="flex items-start gap-2">
             <span className="shrink-0">{log.message}</span>
             {log.details && (
-              <span className="text-textSecondary/70 text-xs">
+              <span className="text-gray-400 text-xs">
                 {log.details}
               </span>
             )}
           </div>
           {log.metadata && Object.keys(log.metadata).length > 0 && (
-            <div className="ml-4 text-textSecondary/60 text-xs">
+            <div className="ml-4 text-gray-500 text-xs">
               {Object.entries(log.metadata).map(([key, value]) => (
                 <span key={key} className="mr-2">
                   {key}: {value}
@@ -49,11 +60,11 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
         </div>
       ))}
       {logs.length > maxLogs && (
-        <div className="text-textSecondary/50 text-xs italic">
+        <div className="text-gray-600 text-xs italic">
           ... ({logs.length - maxLogs} older messages)
         </div>
       )}
-      <div className="text-text animate-blink">
+      <div className="text-green-500 animate-blink">
         _
       </div>
     </div>
