@@ -49,3 +49,16 @@ Thumbs.db
 
 # Superpowers brainstorming sessions
 .superpowers/
+
+# Design / planning docs (kept locally, not in repo)
+docs/
+PROJECT_STRUCTURE.md
+REACT_MIGRATION_PLAN.md
+slogan_color_variants.md
+
+# Prompt version backups
+prompts/backups/
+prompts/version_log.json
+
+# Brainstorming snapshots
+snapshot_*.txt
