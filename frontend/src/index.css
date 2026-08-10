@@ -10,15 +10,39 @@
   body {
     @apply bg-background text-text font-sans antialiased selection:bg-white/20;
     font-feature-settings: "rlig" 1, "calt" 1;
+    position: relative;
+  }
+
+  /* 🌌 Ethereal Glass 径向渐变背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.12) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 确保所有直接子元素在渐变之上 */
+  #root {
+    position: relative;
+    z-index: 1;
   }
 }
 
 @layer components {
 
-  /* Base button */
+  /* ✅ Premium Button - 流体动画 + 物理反馈 */
   .btn {
-    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 ease-in-out;
+    @apply px-6 py-3 rounded-full font-medium;
     @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background;
+    transition: all 700ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .btn:active {
+    @apply scale-[0.98];
   }
 
   .btn-primary {
@@ -27,7 +51,7 @@
   }
 
   .btn-secondary {
-    @apply bg-surface text-text hover:bg-surfaceHover border border-border/50;
+    @apply bg-surface text-text hover:bg-surfaceHover border border-white/10;
     @apply focus:ring-surface;
   }
 
@@ -36,26 +60,27 @@
     @apply focus:ring-surface;
   }
 
-  /* Chat message styles */
+  /* ✅ Chat message - Double-Bezel 架构 */
   .message-bubble {
-    @apply max-w-4xl mx-auto p-6 rounded-2xl;
+    @apply max-w-4xl mx-auto;
     @apply animate-fade-in;
   }
 
   .message-user {
-    @apply bg-surface/60 text-text ml-auto border border-border/50;
+    @apply ml-auto;
   }
 
   .message-assistant {
-    @apply bg-transparent text-text mr-auto;
+    @apply mr-auto;
   }
 
-  /* Input */
+  /* ✅ Premium Input - Double-Bezel */
   .chat-input {
-    @apply w-full px-4 py-3 bg-surface/80 text-text;
-    @apply border border-border rounded-2xl;
+    @apply w-full px-6 py-4 bg-surface/80 backdrop-blur-xl text-text;
+    @apply border border-white/10 rounded-[2rem];
     @apply focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20;
-    @apply placeholder-textSecondary transition-all duration-200;
+    @apply placeholder-textSecondary;
+    transition: all 700ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 }
 
@@ -123,20 +148,22 @@
     @apply border-l-4 border-white/20 pl-4 italic text-textSecondary;
   }
 
-  /* Fade-in animation */
-  @keyframes fadeIn {
+  /* ✅ Premium Fade-in - blur + translate */
+  @keyframes premiumFadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(16px);
+      filter: blur(8px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
     }
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: premiumFadeIn 800ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   /* Blinking cursor */

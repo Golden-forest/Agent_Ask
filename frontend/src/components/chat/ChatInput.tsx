@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { Send, X, Paperclip } from 'lucide-react';
+import { PaperPlaneRight, X, Paperclip } from 'phosphor-react';
 import { useChatStore } from '../../store/chatStore';
 import { isSupportedFile, formatSize } from '../../services/fileParser';
 import toast from 'react-hot-toast';
@@ -80,33 +80,35 @@ export const ChatInput: React.FC = () => {
 
     return (
         <div className="relative w-full max-w-4xl mx-auto">
-            {/* Selected options display */}
+            {/* Selected options display - Premium Chips */}
             {selectedOptions.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2">
+                <div className="mb-3 flex flex-wrap gap-2">
                     {selectedOptions.map((option: string, index: number) => (
                         <div
                             key={index}
-                            className="px-2.5 py-1 bg-white/10 border border-white/20 text-white rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
+                            className="px-3 py-1.5 bg-white/5 border border-white/10 text-white rounded-full text-xs flex items-center gap-2 animate-fade-in
+                                       transition-all duration-premium hover:bg-white/10 hover:border-white/20"
                         >
-                            <span>{option}</span>
+                            <span className="font-medium">{option}</span>
                             <button
                                 onClick={() => toggleOption(option)}
-                                className="hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                                className="hover:bg-white/20 rounded-full p-0.5 transition-all duration-premium"
                             >
-                                <X className="w-3 h-3" />
+                                <X weight="bold" size={12} />
                             </button>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Attached files preview */}
+            {/* Attached files preview - Premium Style */}
             {attachedFiles.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2">
+                <div className="mb-3 flex flex-wrap gap-2">
                     {attachedFiles.map((file) => (
                         <div
                             key={file.id}
-                            className="px-2.5 py-1.5 bg-surface border border-border rounded-lg text-xs flex items-center gap-1.5 animate-fade-in"
+                            className="px-3 py-1.5 bg-surface/60 border border-border rounded-full text-xs flex items-center gap-2 animate-fade-in
+                                       backdrop-blur-xl transition-all duration-premium hover:border-white/20"
                         >
                             {file.status === 'pending' && (
                                 <span className="text-textSecondary">Loading {file.name}...</span>
@@ -115,75 +117,91 @@ export const ChatInput: React.FC = () => {
                                 <span className="text-textSecondary animate-pulse">Parsing {file.name}...</span>
                             )}
                             {file.status === 'ready' && (
-                                <span className="text-text">[{formatSize(file.size)}] {file.name}</span>
+                                <span className="text-text font-medium">[{formatSize(file.size)}] {file.name}</span>
                             )}
                             {file.status === 'error' && (
                                 <span className="text-textSecondary line-through" title={file.error}>{file.name}: {file.error}</span>
                             )}
                             <button
                                 onClick={() => removeFile(file.id)}
-                                className="hover:bg-surfaceHover rounded-full p-0.5 transition-colors"
+                                className="hover:bg-white/10 rounded-full p-0.5 transition-all duration-premium"
                             >
-                                <X className="w-3 h-3" />
+                                <X weight="bold" size={12} />
                             </button>
                         </div>
                     ))}
                 </div>
             )}
 
+            {/* 🎯 Premium Double-Bezel Input Container */}
             <form onSubmit={handleSubmit}
-                className={`relative flex items-end gap-2 bg-surface border rounded-2xl p-1.5 shadow-lg shadow-black/20 focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/10 transition-all duration-200 ${isDragOver ? 'border-white/20 ring-2 ring-white/10' : 'border-border'}`}
+                className={`relative p-2 bg-black/5 rounded-[2rem]
+                           transition-all duration-premium ease-premium
+                           ${isDragOver ? 'ring-2 ring-white/20 bg-black/10' : 'ring-1 ring-white/5'}`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
             >
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_EXTENSIONS}
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                />
-                <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={handleInput}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type your requirements, attach files, or select options above..."
-                    rows={1}
-                    disabled={isLoading}
-                    className="w-full bg-transparent text-text placeholder-textSecondary border-none focus:ring-0 resize-none py-2.5 px-3 max-h-[150px] custom-scrollbar text-sm"
-                    style={{ minHeight: '44px' }}
-                />
-                <div className="flex gap-1.5 mb-0.5 mr-0.5">
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
+                <div className="relative flex items-end gap-2 bg-surface/80 backdrop-blur-xl rounded-[calc(2rem-0.5rem)] p-2
+                               shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept={ACCEPTED_EXTENSIONS}
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
+                    <textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={handleInput}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type your requirements, attach files, or select options above..."
+                        rows={1}
                         disabled={isLoading}
-                        className="h-9 w-9 p-0 rounded-xl flex items-center justify-center transition-all shrink-0 bg-surfaceHover text-textSecondary hover:text-text hover:bg-surface border border-border/50"
-                        title="Attach file"
-                    >
-                        <Paperclip className="w-4 h-4 shrink-0" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => sendMessage('Accept')}
-                        disabled={isLoading}
-                        className="h-9 px-3 rounded-xl flex items-center justify-center bg-white/5 text-text hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-sm font-medium"
-                        title="Accept & Generate Prompt"
-                    >
-                        Accept
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={!canSend}
-                        className={`h-9 w-9 p-0 rounded-xl flex items-center justify-center transition-all shrink-0
-                            ${canSend ? 'bg-primary text-background' : 'bg-surfaceHover text-textSecondary cursor-not-allowed'}
-                        `}
-                    >
-                        <Send className="w-4 h-4 shrink-0" />
-                    </button>
+                        className="w-full bg-transparent text-text placeholder-textSecondary border-none focus:ring-0 resize-none py-3 px-4 max-h-[150px] custom-scrollbar text-sm"
+                        style={{ minHeight: '48px' }}
+                    />
+                    {/* Premium Button Group */}
+                    <div className="flex gap-2 mb-0.5 mr-0.5">
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isLoading}
+                            className="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-premium shrink-0
+                                       bg-white/5 text-textSecondary hover:text-text hover:bg-white/10
+                                       active:scale-95"
+                            title="Attach file"
+                        >
+                            <Paperclip weight="thin" size={20} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => sendMessage('Accept')}
+                            disabled={isLoading}
+                            className="h-10 px-4 rounded-full flex items-center justify-center
+                                       bg-white/5 text-text hover:bg-white/10
+                                       border border-white/10 hover:border-white/20
+                                       transition-all duration-premium text-sm font-medium
+                                       active:scale-95"
+                            title="Accept & Generate Prompt"
+                        >
+                            Accept
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={!canSend}
+                            className={`h-10 w-10 rounded-full flex items-center justify-center transition-all duration-premium shrink-0
+                                       active:scale-95
+                                ${canSend
+                                    ? 'bg-white text-background shadow-lg shadow-white/20 hover:shadow-white/30'
+                                    : 'bg-white/5 text-textSecondary cursor-not-allowed'}
+                            `}
+                        >
+                            <PaperPlaneRight weight="fill" size={20} />
+                        </button>
+                    </div>
                 </div>
             </form>
             <div className="text-center mt-2 text-xs text-textSecondary">

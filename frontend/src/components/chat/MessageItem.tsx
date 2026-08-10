@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { ChatMessage } from '../../types';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check } from 'phosphor-react';
 import { OptionChip } from './OptionChip';
 import { useChatStore } from '../../store/chatStore';
 
@@ -91,10 +91,10 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
     const { selectedOptions, toggleOption } = useChatStore();
     const [copied, setCopied] = React.useState(false);
 
-    const { mainText, options, attachments } = useMemo(() => {
+    const { mainText, options, attachments, optimizedPrompt } = useMemo(() => {
         if (isUser) {
             const { mainText: text, attachments: att } = parseAttachments(message.content);
-            return { mainText: text, options: [], attachments: att };
+            return { mainText: text, options: [], attachments: att, optimizedPrompt: '' };
         }
         if (!message.isStreaming) {
             let cleanContent = message.content;
@@ -110,20 +110,57 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                 cleanContent = cleanContent.replace(optionsListRegex, '').trim();
             }
 
+            // 提取 Optimized Prompt（如果存在）
+            const promptMatch = cleanContent.match(/\*\*Optimized Prompt\*\*:?\s*([\s\S]*?)$/i);
+            let optimizedPrompt = '';
+            if (promptMatch) {
+                let rawPrompt = promptMatch[1].trim();
+
+                // 只取第一个代码块或第一段内容，不包括后续的"执行建议"等
+                // 如果有代码块，只取代码块内容
+                const codeBlockMatch = rawPrompt.match(/```[\w]*\n?([\s\S]*?)\n?```/);
+                if (codeBlockMatch) {
+                    optimizedPrompt = codeBlockMatch[1].trim();
+                } else {
+                    // 如果没有代码块，取到"执行建议"或"---"之前的内容
+                    const sections = rawPrompt.split(/\n\n(?:\*\*(?:执行建议|Execution Suggestions|Implementation Notes|注意事项|Notes)|---)/i);
+                    optimizedPrompt = sections[0].trim();
+                }
+
+                // 进一步清理：移除 Implementation Notes 之后的所有内容
+                optimizedPrompt = optimizedPrompt.split(/\n\n(?:\*\*)?(?:Implementation Notes|执行建议|Execution Suggestions|注意事项|Notes)(?:\*\*)?:?/i)[0].trim();
+
+                // 清理所有 Markdown 格式符号
+                // 移除引用符号 >
+                optimizedPrompt = optimizedPrompt.replace(/^>\s*/gm, '');
+                // 移除列表符号 - 和 *
+                optimizedPrompt = optimizedPrompt.replace(/^[-*]\s+/gm, '');
+                // 移除粗体标记 **text**
+                optimizedPrompt = optimizedPrompt.replace(/\*\*([^*]+)\*\*/g, '$1');
+                // 移除斜体标记 *text*
+                optimizedPrompt = optimizedPrompt.replace(/\*([^*]+)\*/g, '$1');
+                // 移除行内代码标记 `code`
+                optimizedPrompt = optimizedPrompt.replace(/`([^`]+)`/g, '$1');
+                // 移除标题标记 #
+                optimizedPrompt = optimizedPrompt.replace(/^#+\s+/gm, '');
+
+                optimizedPrompt = optimizedPrompt.trim();
+
+                // 从主内容中移除 Optimized Prompt 部分
+                cleanContent = cleanContent.replace(/\*\*Optimized Prompt\*\*:?\s*[\s\S]*$/i, '').trim();
+            }
+
             return {
                 mainText: cleanContent,
                 options: parseOptions(message.content).options,
                 attachments: [],
+                optimizedPrompt,
             };
         }
-        return { mainText: message.content, options: [], attachments: [] };
+        return { mainText: message.content, options: [], attachments: [], optimizedPrompt: '' };
     }, [message.content, isUser, message.isStreaming]);
 
-    const handleCopy = async () => {
-        // Extract the optimized prompt text
-        const promptMatch = message.content.match(/\*\*Optimized Prompt\*\*:\s*([\s\S]*?)$/i);
-        const textToCopy = promptMatch ? promptMatch[1].trim() : message.content;
-
+    const handleCopy = async (textToCopy: string) => {
         try {
             await navigator.clipboard.writeText(textToCopy);
             setCopied(true);
@@ -133,81 +170,93 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
         }
     };
 
-    const isOptimizedPrompt = message.content.includes('**Optimized Prompt**');
-
     return (
-        <div className={`flex w-full mb-8 ${isUser ? 'justify-end' : 'justify-start'}`}>
-            <div
-                className={`
-          max-w-[85%] md:max-w-[75%] rounded-2xl p-6 shadow-sm relative group
-          ${isUser
-                        ? 'bg-surface text-text border border-border/50'
-                        : 'bg-transparent text-text pl-0'
-                    }
-        `}
-            >
-                {!isUser && (
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center">
-                                <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-6 h-6 rounded-md" />
-                            </div>
-                            <span className="font-semibold text-sm tracking-wide text-text/90">agent_ask</span>
-                        </div>
-
-                        {isOptimizedPrompt && !message.isStreaming && (
-                            <button
-                                onClick={handleCopy}
-                                className="p-2 rounded-lg bg-surface border border-border/50 text-textSecondary hover:text-text hover:border-white/20 transition-all opacity-0 group-hover:opacity-100"
-                                title="Copy Optimized Prompt"
-                            >
-                                {copied ? (
-                                    <Check className="w-4 h-4 text-white" />
-                                ) : (
-                                    <Copy className="w-4 h-4" />
+        <div className={`flex w-full mb-8 animate-fade-in ${isUser ? 'justify-end' : 'justify-start'}`}>
+            {isUser ? (
+                /* 🎯 Premium User Message - Double-Bezel */
+                <div className="max-w-[85%] md:max-w-[75%] p-2 bg-black/5 ring-1 ring-white/5 rounded-[2rem]
+                                transition-all duration-premium ease-premium hover:ring-white/10">
+                    <div className="relative p-6 bg-surface/60 backdrop-blur-xl rounded-[calc(2rem-0.5rem)]
+                                    shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                        <div className="prose prose-invert max-w-none">
+                            <div className="whitespace-pre-wrap leading-relaxed text-text">
+                                <p className="m-0">{mainText}</p>
+                                {attachments.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {attachments.map((name, i) => (
+                                            <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-textSecondary">
+                                                {name}
+                                            </span>
+                                        ))}
+                                    </div>
                                 )}
-                            </button>
-                        )}
-                    </div>
-                )}
-
-                <div className={`prose prose-invert max-w-none ${isUser ? 'text-right' : 'text-left'}`}>
-                    {isUser ? (
-                        <div className="whitespace-pre-wrap m-0 leading-relaxed">
-                            <p>{mainText}</p>
-                            {attachments.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                    {attachments.map((name, i) => (
-                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface/50 border border-border/50 rounded text-xs text-textSecondary">
-                                            {name}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
+                            </div>
                         </div>
-                    ) : (
+                    </div>
+                </div>
+            ) : (
+                /* 🎯 Premium Assistant Message */
+                <div className="max-w-[85%] md:max-w-[75%] w-full">
+                    {/* Header with Avatar */}
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-xl bg-surface/60 border border-white/10 flex items-center justify-center backdrop-blur-xl overflow-hidden">
+                            <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-full h-full object-cover" />
+                        </div>
+                        <span className="font-semibold text-sm tracking-wide text-text/90">agent_ask</span>
+                    </div>
+
+                    {/* Message Content */}
+                    <div className="prose prose-invert max-w-none text-left">
                         <ReactMarkdown>{mainText}</ReactMarkdown>
+                    </div>
+
+                    {/* Optimized Prompt Code Block */}
+                    {optimizedPrompt && (
+                        <div className="mt-6 relative p-2 bg-black/5 ring-1 ring-white/5 rounded-[2rem]">
+                            <div className="relative bg-surface/60 backdrop-blur-xl rounded-[calc(2rem-0.5rem)] p-6
+                                            shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                                {/* Copy Button - 右上角 */}
+                                <button
+                                    onClick={() => handleCopy(optimizedPrompt)}
+                                    className="absolute top-4 right-4 p-2 rounded-xl bg-white/5 border border-white/10 text-textSecondary hover:text-text hover:border-white/20
+                                               transition-all duration-premium backdrop-blur-xl active:scale-95"
+                                    title="Copy Prompt"
+                                >
+                                    {copied ? (
+                                        <Check weight="bold" size={16} className="text-white" />
+                                    ) : (
+                                        <Copy weight="thin" size={16} />
+                                    )}
+                                </button>
+
+                                {/* Prompt Content */}
+                                <pre className="text-sm text-text/90 font-mono whitespace-pre-wrap break-words m-0 pr-12">
+                                    {optimizedPrompt}
+                                </pre>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Render options if they exist */}
+                    {options.length > 0 && !message.isStreaming && (
+                        <div className="mt-6 flex flex-wrap gap-2.5 animate-fade-in">
+                            {options.map((option, index) => (
+                                <OptionChip
+                                    key={index}
+                                    option={option}
+                                    isSelected={selectedOptions.includes(option)}
+                                    onToggle={() => toggleOption(option)}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Streaming Indicator */}
+                    {message.isStreaming && (
+                        <span className="typing-indicator ml-1"></span>
                     )}
                 </div>
-
-                {/* Render options if they exist */}
-                {!isUser && options.length > 0 && !message.isStreaming && (
-                    <div className="mt-6 flex flex-wrap gap-2.5 animate-slide-up">
-                        {options.map((option, index) => (
-                            <OptionChip
-                                key={index}
-                                option={option}
-                                isSelected={selectedOptions.includes(option)}
-                                onToggle={() => toggleOption(option)}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {message.isStreaming && (
-                    <span className="typing-indicator ml-1"></span>
-                )}
-            </div>
+            )}
         </div>
     );
 };

@@ -39,14 +39,7 @@ interface ChatStore {
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
-    messages: [
-        {
-            id: 'welcome',
-            role: 'assistant',
-            content: 'Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details.',
-            timestamp: new Date(),
-        }
-    ],
+    messages: [],  // ✅ 移除初始欢迎消息，显示 Bento Grid 空状态
     isLoading: false,
     input: '',
     currentConversationId: null,
@@ -73,14 +66,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             abortController.abort();
         }
         set({
-            messages: [
-                {
-                    id: 'welcome',
-                    role: 'assistant',
-                    content: 'Hello! I am agent_ask. Please tell me your requirements, and I will help you clarify the details.',
-                    timestamp: new Date(),
-                }
-            ],
+            messages: [],  // ✅ 移除初始欢迎消息，显示 Bento Grid 空状态
             currentConversationId: null,
             selectedOptions: [],
             input: '',

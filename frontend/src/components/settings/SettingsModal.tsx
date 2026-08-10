@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Eye, EyeOff, X, ExternalLink, Loader2, Zap } from 'lucide-react';
+import { Eye, EyeSlash, X, ArrowSquareOut, CircleNotch, Lightning } from 'phosphor-react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { PROVIDER_LIST, getProvider } from '../../services/providers';
 import { testConnection } from '../../services/llm';
@@ -192,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
               className="w-8 h-8 rounded-lg flex items-center justify-center text-textSecondary hover:text-text hover:bg-surfaceHover transition-colors"
               title="关闭"
             >
-              <X className="w-4 h-4" />
+              <X weight="bold" size={16} />
             </button>
           )}
         </div>
@@ -282,7 +282,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                   className="inline-flex items-center gap-1 text-xs text-text hover:text-white underline underline-offset-2 transition-colors"
                 >
                   获取 Key
-                  <ExternalLink className="w-3 h-3" />
+                  <ArrowSquareOut weight="thin" size={14} />
                 </a>
               )}
             </div>
@@ -304,7 +304,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 title={showApiKey ? '隐藏' : '显示'}
                 tabIndex={-1}
               >
-                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showApiKey ? <EyeSlash weight="thin" size={18} /> : <Eye weight="thin" size={18} />}
               </button>
             </div>
           </div>
@@ -328,7 +328,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
             disabled={isTesting}
             className="inline-flex items-center gap-2 bg-transparent border border-border text-textSecondary hover:text-text hover:border-white/20 hover:bg-surfaceHover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {isTesting ? <CircleNotch weight="bold" size={16} className="animate-spin" /> : <Lightning weight="thin" size={16} />}
             {isTesting ? '测试中...' : '测试连接'}
           </button>
 
