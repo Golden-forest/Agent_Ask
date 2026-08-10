@@ -19,16 +19,16 @@ export const Header: React.FC = () => {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-b border-white/5 z-50 flex items-center justify-between px-6">
+        <header className="fixed top-0 left-0 right-0 h-16 border-b border-white/5 z-50 flex items-center justify-between px-6">
             <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-surface/60 border border-white/10 flex items-center justify-center backdrop-blur-xl overflow-hidden">
+                <div className="w-8 h-8 rounded-xl bg-surface/60 border border-purple-400/20 flex items-center justify-center backdrop-blur-xl overflow-hidden">
                     <img src="/Agent_ask_icon.png" alt="agent_ask" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                    <p className="text-lg font-semibold tracking-tight text-text">
-                        <span>Ask Smarter</span>
+                    <p className="text-lg font-semibold tracking-tight">
+                        <span className="text-purple-300">Ask Smarter</span>
                         <span className="text-textSecondary mx-1.5">•</span>
-                        <span>Create Faster</span>
+                        <span className="text-emerald-300">Create Faster</span>
                     </p>
                 </div>
             </div>

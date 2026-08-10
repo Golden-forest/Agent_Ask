@@ -73,7 +73,7 @@ export const ChatInterface: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto px-4 pt-24 pb-6">
+    <div className="flex flex-col h-full max-w-5xl mx-auto px-4 pt-10 pb-6">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-4 px-2">
         {messages.length === 0 ? (

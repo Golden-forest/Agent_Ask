@@ -19,7 +19,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-text font-sans selection:bg-primary/30">
       <Header />
-      <main className="h-screen">
+      <main className="h-screen pt-16">
         <ChatInterface />
       </main>
       <SettingsModal forceOpen={forceSettings} onConfigured={() => setForceSettings(false)} />
