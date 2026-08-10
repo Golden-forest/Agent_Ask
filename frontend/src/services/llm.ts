@@ -44,6 +44,23 @@ export async function* streamChat(
   const url = getEndpoint(settings);
   const model = resolveModel(settings);
 
+  // 构建请求体,根据供应商添加搜索参数
+  const requestBody: any = {
+    model,
+    messages,
+    stream: true,
+  };
+
+  // DeepSeek 搜索支持
+  if (settings.enableSearch && settings.provider === 'deepseek') {
+    requestBody.web_search = true;
+  }
+
+  // Qwen 搜索支持
+  if (settings.enableSearch && settings.provider === 'qwen') {
+    requestBody.enable_search = true;
+  }
+
   let response: Response;
   try {
     response = await fetch(url, {
@@ -52,11 +69,7 @@ export async function* streamChat(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        stream: true,
-      }),
+      body: JSON.stringify(requestBody),
       signal,
     });
   } catch (err: any) {

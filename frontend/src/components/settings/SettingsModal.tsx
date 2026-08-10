@@ -20,6 +20,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
   const setModel = useSettingsStore((s) => s.setModel);
   const setCustomBaseUrl = useSettingsStore((s) => s.setCustomBaseUrl);
   const setCustomModel = useSettingsStore((s) => s.setCustomModel);
+  const setEnableSearch = useSettingsStore((s) => s.setEnableSearch);
+  const setEnableVision = useSettingsStore((s) => s.setEnableVision);
   const setModalOpen = useSettingsStore((s) => s.setModalOpen);
 
   // 本地 UI 状态
@@ -307,6 +309,68 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 {showApiKey ? <EyeSlash weight="thin" size={18} /> : <Eye weight="thin" size={18} />}
               </button>
             </div>
+          </div>
+
+          {/* ----- 高级功能开关 ----- */}
+          <div className="space-y-3 pt-2 border-t border-border/30">
+            <div className="text-sm font-medium text-text">高级功能</div>
+
+            {/* 网络搜索开关 */}
+            <label className="flex items-center justify-between cursor-pointer group">
+              <div className="flex-1">
+                <div className="text-sm text-text group-hover:text-white transition-colors">
+                  启用网络搜索
+                </div>
+                <div className="text-xs text-textSecondary mt-0.5">
+                  {settings.provider === 'deepseek' || settings.provider === 'qwen'
+                    ? '当前模型支持实时搜索'
+                    : '仅 DeepSeek 和 Qwen 支持'}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={settings.enableSearch}
+                disabled={settings.provider !== 'deepseek' && settings.provider !== 'qwen'}
+                onClick={() => setEnableSearch(!settings.enableSearch)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  settings.enableSearch ? 'bg-primary' : 'bg-surface border border-border'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.enableSearch ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+
+            {/* 多模态视觉开关 */}
+            <label className="flex items-center justify-between cursor-pointer group">
+              <div className="flex-1">
+                <div className="text-sm text-text group-hover:text-white transition-colors">
+                  启用图片理解 (多模态)
+                </div>
+                <div className="text-xs text-textSecondary mt-0.5">
+                  支持 GPT-4o/DeepSeek-V4/Qwen-VL 等视觉模型
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={settings.enableVision}
+                onClick={() => setEnableVision(!settings.enableVision)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.enableVision ? 'bg-primary' : 'bg-surface border border-border'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.enableVision ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
           </div>
 
           {/* ----- 当前生效信息（只读提示） ----- */}

@@ -45,7 +45,7 @@ export interface AttachedFile {
 
 // ============ LLM Provider Types ============
 
-export type ProviderId = 'deepseek' | 'openai' | 'qwen' | 'custom';
+export type ProviderId = 'deepseek' | 'openai' | 'claude' | 'gemini' | 'qwen' | 'custom';
 
 export interface ModelOption {
   id: string;
@@ -67,6 +67,8 @@ export interface LlmSettings {
   model: string;
   customBaseUrl: string;
   customModel: string;
+  enableSearch: boolean;        // 启用网络搜索(DeepSeek/Qwen 原生支持)
+  enableVision: boolean;        // 启用视觉理解(多模态模型)
 }
 
 // OpenAI API message format

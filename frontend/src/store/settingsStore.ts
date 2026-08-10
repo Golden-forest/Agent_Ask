@@ -9,6 +9,8 @@ const DEFAULT_SETTINGS: LlmSettings = {
   model: PROVIDERS.deepseek.defaultModel,
   customBaseUrl: '',
   customModel: '',
+  enableSearch: false,
+  enableVision: false,
 };
 
 interface SettingsStore {
@@ -19,6 +21,8 @@ interface SettingsStore {
   setModel: (model: string) => void;
   setCustomBaseUrl: (url: string) => void;
   setCustomModel: (model: string) => void;
+  setEnableSearch: (enable: boolean) => void;
+  setEnableVision: (enable: boolean) => void;
   setModalOpen: (open: boolean) => void;
   hasApiKey: () => boolean;
 }
@@ -49,6 +53,12 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setCustomModel: (customModel) =>
         set((state) => ({ settings: { ...state.settings, customModel } })),
+
+      setEnableSearch: (enableSearch) =>
+        set((state) => ({ settings: { ...state.settings, enableSearch } })),
+
+      setEnableVision: (enableVision) =>
+        set((state) => ({ settings: { ...state.settings, enableVision } })),
 
       setModalOpen: (isModalOpen) => set({ isModalOpen }),
 
