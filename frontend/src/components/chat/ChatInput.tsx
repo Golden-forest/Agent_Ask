@@ -1,7 +1,7 @@
 import React, { useRef, useCallback } from 'react';
 import { PaperPlaneRight, X, Paperclip } from 'phosphor-react';
 import { useChatStore } from '../../store/chatStore';
-import { isSupportedFile, formatSize } from '../../services/fileParser';
+import { isSupportedFile, formatSize } from '../../services/fileUtils';
 import toast from 'react-hot-toast';
 
 const ACCEPTED_EXTENSIONS = '.txt,.md,.json,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp,.svg';

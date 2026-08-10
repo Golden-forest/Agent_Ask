@@ -5,7 +5,6 @@ import { buildApiMessages } from '../services/promptTemplate';
 import { useSettingsStore } from './settingsStore';
 import toast from 'react-hot-toast';
 import type { AttachedFile } from '../types';
-import { extractText } from '../services/fileParser';
 
 interface ChatStore {
     messages: ChatMessage[];
@@ -328,6 +327,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 )
             }));
 
+            const { extractText } = await import('../services/fileParser');
             const content = await extractText(file);
 
             // Update to ready

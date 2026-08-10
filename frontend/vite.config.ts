@@ -22,6 +22,19 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // PDF 解析库单独成 chunk，避免与 mammoth 混在一起
+          pdfjs: ['pdfjs-dist'],
+          mammoth: ['mammoth'],
+        }
+      }
+    },
+    // pdfjs worker 本身 ~1.2MB 是库本身的体积，无法再拆分，提高告警阈值避免噪音
+    chunkSizeWarningLimit: 1500
+  },
   server: {
     host: '0.0.0.0',  // 监听所有网络接口，允许局域网访问
     port: 5173,
