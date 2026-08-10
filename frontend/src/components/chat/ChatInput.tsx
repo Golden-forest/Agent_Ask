@@ -4,7 +4,7 @@ import { useChatStore } from '../../store/chatStore';
 import { isSupportedFile, formatSize } from '../../services/fileParser';
 import toast from 'react-hot-toast';
 
-const ACCEPTED_EXTENSIONS = '.txt,.md,.json,.csv,.pdf,.docx,.doc';
+const ACCEPTED_EXTENSIONS = '.txt,.md,.json,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp,.svg';
 
 export const ChatInput: React.FC = () => {
     const { input, setInput, sendMessage, isLoading, selectedOptions, toggleOption, attachedFiles, addFile, removeFile } = useChatStore();
@@ -77,6 +77,27 @@ export const ChatInput: React.FC = () => {
         e.preventDefault();
         setIsDragOver(false);
     }, []);
+
+    const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        const files: File[] = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                if (file) {
+                    files.push(file);
+                }
+            }
+        }
+
+        if (files.length > 0) {
+            e.preventDefault();
+            await processFiles(files);
+        }
+    }, [processFiles]);
 
     return (
         <div className="relative w-full max-w-4xl mx-auto">
@@ -157,6 +178,7 @@ export const ChatInput: React.FC = () => {
                         value={input}
                         onChange={handleInput}
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                         placeholder="Type your requirements, attach files, or select options above..."
                         rows={1}
                         disabled={isLoading}
@@ -205,7 +227,7 @@ export const ChatInput: React.FC = () => {
                 </div>
             </form>
             <div className="text-center mt-2 text-xs text-textSecondary">
-                Press Enter to send, Shift + Enter for new line. Supports TXT, MD, PDF, DOCX.
+                © 2026 Agent Ask. Privacy-first AI assistant. Your data never leaves your browser.
             </div>
         </div>
     );
