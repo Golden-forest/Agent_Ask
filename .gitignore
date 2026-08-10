@@ -1,13 +1,3 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-venv/
-env/
-.venv/
-
 # IDE
 .vscode/
 .idea/
@@ -19,23 +9,6 @@ env/
 # Logs
 *.log
 logs/
-
-# Data
-data/*.db
-data/*.sqlite
-
-# API Keys
-config/keys.json
-
-# Testing
-.coverage
-.pytest_cache/
-htmlcov/
-
-# Build
-build/
-dist/
-*.egg-info/
 
 # Runtime
 *.pid
@@ -52,13 +25,3 @@ Thumbs.db
 
 # Design / planning docs (kept locally, not in repo)
 docs/
-PROJECT_STRUCTURE.md
-REACT_MIGRATION_PLAN.md
-slogan_color_variants.md
-
-# Prompt version backups
-prompts/backups/
-prompts/version_log.json
-
-# Brainstorming snapshots
-snapshot_*.txt

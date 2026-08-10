@@ -87,11 +87,23 @@ All providers use the standard OpenAI `/v1/chat/completions` format. The Custom 
 
 ## Deployment
 
-Since Agent Ask is a static PWA, you can host it on any static hosting platform:
+Since Agent Ask is a static PWA, you can host it on any static hosting platform.
+
+### Cloudflare Pages (recommended)
+
+The project includes a one-command deploy script:
+
+```bash
+cd frontend
+npm run deploy
+```
+
+This runs `npm run build` followed by `wrangler pages deploy dist --project-name=agent-ask`. The first time you run it, you'll need to authenticate with `npx wrangler login`.
+
+### Other platforms
 
 | Platform | Command | Notes |
 |----------|---------|-------|
-| Cloudflare Pages | `npx wrangler pages deploy frontend/dist --project-name=agent-ask` | Direct upload, no repo connection needed |
 | GitHub Pages | Push `frontend/dist/` to `gh-pages` branch | Set `base` in `vite.config.ts` if not deploying to root domain |
 | Vercel | `vercel --prod` in `frontend/` | Zero config |
 | Netlify | Drag `frontend/dist/` folder | Zero config |
@@ -141,11 +153,10 @@ agent_ask/
 │   ├── public/                # Static assets (icons)
 │   ├── vite.config.ts         # Vite + PWA config
 │   └── package.json
-├── README.md
-└── (legacy Python files: server.py, search.py, config.py, run.py — not used by the PWA)
+└── README.md
 ```
 
-> The PWA in `frontend/` is fully self-contained. The root-level Python files (`server.py`, `search.py`, `config.py`, `run.py`, `requirements.txt`) are leftovers from an earlier full-stack version and are not needed to run or build the app.
+> The PWA in `frontend/` is fully self-contained — no backend, no server-side code.
 
 ---
 
