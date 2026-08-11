@@ -25,3 +25,8 @@ Thumbs.db
 
 # Design / planning docs (kept locally, not in repo)
 docs/
+
+# Legacy Python backend (deprecated, removed from architecture)
+venv/
+__pycache__/
+*.pyc
