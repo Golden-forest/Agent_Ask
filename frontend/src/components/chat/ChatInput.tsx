@@ -3,10 +3,12 @@ import { PaperPlaneRight, X, Paperclip } from 'phosphor-react';
 import { useChatStore } from '../../store/chatStore';
 import { isSupportedFile, formatSize } from '../../services/fileUtils';
 import toast from 'react-hot-toast';
+import { useT } from '../../i18n';
 
 const ACCEPTED_EXTENSIONS = '.txt,.md,.json,.csv,.pdf,.docx,.doc,.png,.jpg,.jpeg,.gif,.webp,.svg';
 
 export const ChatInput: React.FC = () => {
+    const { t } = useT();
     const { input, setInput, sendMessage, isLoading, selectedOptions, toggleOption, attachedFiles, addFile, removeFile } = useChatStore();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -132,10 +134,10 @@ export const ChatInput: React.FC = () => {
                                        backdrop-blur-xl transition-all duration-premium hover:border-white/20"
                         >
                             {file.status === 'pending' && (
-                                <span className="text-textSecondary">Loading {file.name}...</span>
+                                <span className="text-textSecondary">{t('chat.loadingFile', { file: file.name })}</span>
                             )}
                             {file.status === 'parsing' && (
-                                <span className="text-textSecondary animate-pulse">Parsing {file.name}...</span>
+                                <span className="text-textSecondary animate-pulse">{t('chat.parsingFile', { file: file.name })}</span>
                             )}
                             {file.status === 'ready' && (
                                 <span className="text-text font-medium">[{formatSize(file.size)}] {file.name}</span>
@@ -179,7 +181,7 @@ export const ChatInput: React.FC = () => {
                         onChange={handleInput}
                         onKeyDown={handleKeyDown}
                         onPaste={handlePaste}
-                        placeholder="Type your requirements, attach files, or select options above..."
+                        placeholder={t('chat.inputPlaceholder')}
                         rows={1}
                         disabled={isLoading}
                         className="w-full bg-transparent text-text placeholder-textSecondary border-none focus:ring-0 resize-none py-3 px-4 max-h-[150px] custom-scrollbar text-sm"
@@ -194,7 +196,7 @@ export const ChatInput: React.FC = () => {
                             className="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-premium shrink-0
                                        bg-white/5 text-textSecondary hover:text-text hover:bg-white/10
                                        active:scale-95"
-                            title="Attach file"
+                            title={t('chat.attachFile')}
                         >
                             <Paperclip weight="thin" size={20} />
                         </button>
@@ -207,9 +209,9 @@ export const ChatInput: React.FC = () => {
                                        border border-white/10 hover:border-white/20
                                        transition-all duration-premium text-sm font-medium
                                        active:scale-95"
-                            title="Accept & Generate Prompt"
+                            title={t('chat.acceptTooltip')}
                         >
-                            Accept
+                            {t('chat.accept')}
                         </button>
                         <button
                             type="submit"
@@ -227,7 +229,7 @@ export const ChatInput: React.FC = () => {
                 </div>
             </form>
             <div className="text-center mt-2 text-xs text-textSecondary">
-                © 2026 Agent Ask. Privacy-first AI assistant. Your data never leaves your browser.
+                {t('chat.footer')}
             </div>
         </div>
     );
