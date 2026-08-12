@@ -4,6 +4,7 @@ import { MessageItem } from './MessageItem';
 import { ChatInput } from './ChatInput';
 import { LoadingIndicator } from './LoadingIndicator';
 import { CheckSquare, ChartBar, GameController, ArrowRight, Sparkle, Cube } from 'phosphor-react';
+import { useT } from '../../i18n';
 
 /**
  * 🎨 Premium ChatInterface
@@ -18,46 +19,22 @@ import { CheckSquare, ChartBar, GameController, ArrowRight, Sparkle, Cube } from
 
 interface ExamplePrompt {
   id: string;
-  text: string;
+  textKey: 'chat.example1' | 'chat.example2' | 'chat.example3' | 'chat.example4' | 'chat.example5';
   icon: React.ReactNode;
   span: string;
 }
 
 const EXAMPLE_PROMPTS: ExamplePrompt[] = [
-  {
-    id: '1',
-    text: 'I want to build a todo app',
-    icon: <CheckSquare weight="thin" size={24} />,
-    span: 'md:col-span-4 md:row-span-1',
-  },
-  {
-    id: '2',
-    text: 'I need a tool to analyze CSV files',
-    icon: <ChartBar weight="thin" size={24} />,
-    span: 'md:col-span-4 md:row-span-1',
-  },
-  {
-    id: '3',
-    text: 'I want to create a text adventure game',
-    icon: <GameController weight="thin" size={24} />,
-    span: 'md:col-span-4 md:row-span-1',
-  },
-  {
-    id: '4',
-    text: 'Help me design a landing page',
-    icon: <Sparkle weight="thin" size={24} />,
-    span: 'md:col-span-4 md:row-span-1',
-  },
-  {
-    id: '5',
-    text: 'I want to create an interactive simulation webpage',
-    icon: <Cube weight="thin" size={24} />,
-    span: 'md:col-span-4 md:row-span-1',
-  },
+  { id: '1', textKey: 'chat.example1', icon: <CheckSquare weight="thin" size={24} />, span: 'md:col-span-4 md:row-span-1' },
+  { id: '2', textKey: 'chat.example2', icon: <ChartBar weight="thin" size={24} />, span: 'md:col-span-4 md:row-span-1' },
+  { id: '3', textKey: 'chat.example3', icon: <GameController weight="thin" size={24} />, span: 'md:col-span-4 md:row-span-1' },
+  { id: '4', textKey: 'chat.example4', icon: <Sparkle weight="thin" size={24} />, span: 'md:col-span-4 md:row-span-1' },
+  { id: '5', textKey: 'chat.example5', icon: <Cube weight="thin" size={24} />, span: 'md:col-span-4 md:row-span-1' },
 ];
 
 export const ChatInterface: React.FC = () => {
   const { messages, isLoading, setInput } = useChatStore();
+  const { t } = useT();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -68,8 +45,8 @@ export const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleExampleClick = (prompt: string) => {
-    setInput(prompt);
+  const handleExampleClick = (textKey: ExamplePrompt['textKey']) => {
+    setInput(t(textKey));
   };
 
   return (
@@ -95,25 +72,16 @@ export const ChatInterface: React.FC = () => {
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-500/5 to-transparent rounded-full blur-3xl" />
 
                     <div className="relative z-10">
-                      {/* Eyebrow Tag */}
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-5 rounded-full
-                                      bg-white/[0.06] border border-white/[0.12]
-                                      shadow-[0_2px_8px_rgba(0,0,0,0.1)]
-                                      text-[9px] uppercase tracking-[0.25em] font-semibold text-white/70">
-                        <Sparkle weight="thin" size={11} />
-                        AI ASSISTANT
-                      </div>
-
-                      {/* 大标题 */}
+                      {/* 大标题 - 新文案,按语言二选一 */}
                       <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-4">
-                        What do you want
+                        {t('chat.heroTitleLine1')}
                         <br />
-                        <span className="text-white/60">to build?</span>
+                        <span className="text-white/60">{t('chat.heroTitleLine2')}</span>
                       </h1>
 
                       {/* 副标题 */}
                       <p className="text-base md:text-lg text-textSecondary/90 max-w-xl leading-relaxed">
-                        Describe a rough idea and the AI will guide you step by step to clarify your requirements.
+                        {t('chat.heroSubtitle')}
                       </p>
                     </div>
                   </div>
@@ -125,7 +93,7 @@ export const ChatInterface: React.FC = () => {
                   key={prompt.id}
                   prompt={prompt}
                   index={index}
-                  onClick={() => handleExampleClick(prompt.text)}
+                  onClick={() => handleExampleClick(prompt.textKey)}
                 />
               ))}
             </div>
@@ -161,6 +129,7 @@ interface BentoPromptCardProps {
 }
 
 const BentoPromptCard: React.FC<BentoPromptCardProps> = ({ prompt, index, onClick }) => {
+  const { t } = useT();
   const [isHovered, setIsHovered] = React.useState(false);
 
   return (
@@ -200,7 +169,7 @@ const BentoPromptCard: React.FC<BentoPromptCardProps> = ({ prompt, index, onClic
 
             {/* Text */}
             <p className="text-sm md:text-base text-text/90 font-medium leading-snug">
-              {prompt.text}
+              {t(prompt.textKey)}
             </p>
           </div>
 
