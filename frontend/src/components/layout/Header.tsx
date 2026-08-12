@@ -2,6 +2,7 @@ import React from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { Plus, Gear, TerminalWindow } from 'phosphor-react';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useT } from '../../i18n';
 
 /**
  * 🎯 Premium Header
@@ -13,6 +14,7 @@ export const Header: React.FC = () => {
     const toggleTerminalLog = useChatStore((state) => state.toggleTerminalLog);
     const systemStatusLength = useChatStore((state) => state.systemStatus.length);
     const setSettingsModalOpen = useSettingsStore((state) => state.setModalOpen);
+    const { t } = useT();
 
     const handleNewConversation = () => {
         newConversation();
@@ -26,9 +28,9 @@ export const Header: React.FC = () => {
                 </div>
                 <div>
                     <p className="text-lg font-semibold tracking-tight">
-                        <span className="text-purple-300">Ask Smarter</span>
-                        <span className="text-textSecondary mx-1.5">•</span>
-                        <span className="text-emerald-300">Create Faster</span>
+                        <span className="text-purple-300">{t('header.taglineA')}</span>
+                        <span className="text-textSecondary mx-1.5">{t('header.taglineSep')}</span>
+                        <span className="text-emerald-300">{t('header.taglineB')}</span>
                     </p>
                 </div>
             </div>
@@ -42,7 +44,7 @@ export const Header: React.FC = () => {
                                    ${showTerminalLog
                                        ? 'bg-white/10 border-white/20 text-white'
                                        : 'bg-surface/60 border-white/10 text-textSecondary hover:text-text hover:bg-white/5 backdrop-blur-xl'}`}
-                        title={showTerminalLog ? 'Hide terminal log' : 'Show terminal log'}
+                        title={showTerminalLog ? t('header.toggleTerminalHide') : t('header.toggleTerminalShow')}
                     >
                         <TerminalWindow weight="thin" size={18} />
                     </button>
@@ -51,7 +53,7 @@ export const Header: React.FC = () => {
                     onClick={() => setSettingsModalOpen(true)}
                     className="w-9 h-9 rounded-xl bg-surface/60 border border-white/10 text-textSecondary hover:text-text hover:bg-white/5
                                transition-all duration-premium flex items-center justify-center backdrop-blur-xl active:scale-95"
-                    title="Settings"
+                    title={t('header.settings')}
                 >
                     <Gear weight="thin" size={18} />
                 </button>
@@ -59,7 +61,7 @@ export const Header: React.FC = () => {
                     onClick={handleNewConversation}
                     className="w-9 h-9 rounded-xl bg-surface/60 border border-white/10 text-textSecondary hover:text-text hover:bg-white/5
                                transition-all duration-premium flex items-center justify-center backdrop-blur-xl active:scale-95"
-                    title="New Conversation"
+                    title={t('header.newConversation')}
                 >
                     <Plus weight="thin" size={18} />
                 </button>
