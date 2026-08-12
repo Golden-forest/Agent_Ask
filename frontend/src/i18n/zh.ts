@@ -60,6 +60,6 @@ const zh = {
   'settings.testing': '测试中……',
   'settings.cancel': '取消',
   'settings.save': '保存',
-} as const;
+};
 
 export default zh;
