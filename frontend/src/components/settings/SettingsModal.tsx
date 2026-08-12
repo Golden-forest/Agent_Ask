@@ -5,6 +5,8 @@ import { PROVIDER_LIST, getProvider } from '../../services/providers';
 import { testConnection } from '../../services/llm';
 import type { ProviderId } from '../../types';
 import toast from 'react-hot-toast';
+import { useT } from '../../i18n';
+import type { Language } from '../../i18n/types';
 
 interface SettingsModalProps {
   forceOpen?: boolean; // 首启动时强制打开（不可关闭）
@@ -23,6 +25,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
   const setEnableSearch = useSettingsStore((s) => s.setEnableSearch);
   const setEnableVision = useSettingsStore((s) => s.setEnableVision);
   const setModalOpen = useSettingsStore((s) => s.setModalOpen);
+  const language = useSettingsStore((s) => s.settings.language);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const { t } = useT();
 
   // 本地 UI 状态
   const [showApiKey, setShowApiKey] = useState(false);
@@ -182,17 +187,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
         <div className="flex items-center justify-between px-6 py-5 border-b border-border/50">
           <div className="flex flex-col">
             <h2 className="text-lg font-semibold text-text">
-              {forceOpen ? '首次使用，请配置 LLM 供应商和 API Key' : '设置'}
+              {forceOpen ? t('settings.titleFirstUse') : t('settings.title')}
             </h2>
             {!forceOpen && (
-              <p className="text-xs text-textSecondary mt-0.5">配置 LLM 供应商和 API Key</p>
+              <p className="text-xs text-textSecondary mt-0.5">{t('settings.subtitle')}</p>
             )}
           </div>
           {!forceOpen && (
             <button
               onClick={handleClose}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-textSecondary hover:text-text hover:bg-surfaceHover transition-colors"
-              title="关闭"
+              title={t('settings.close')}
             >
               <X weight="bold" size={16} />
             </button>
@@ -201,10 +206,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
 
         {/* ========== Body ========== */}
         <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+          {/* ----- 语言选择 ----- */}
+          <div className="space-y-2">
+            <label htmlFor="language-select" className="block text-sm font-medium text-text">
+              {t('settings.languageLabel')}
+            </label>
+            <select
+              id="language-select"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-text focus:outline-none focus:border-white/30 transition-colors cursor-pointer"
+            >
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
           {/* ----- 供应商选择 ----- */}
           <div className="space-y-2">
             <label htmlFor="provider-select" className="block text-sm font-medium text-text">
-              LLM 供应商
+              {t('settings.providerLabel')}
             </label>
             <select
               id="provider-select"
@@ -223,7 +244,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
           {/* ----- 模型选择 ----- */}
           <div className="space-y-2">
             <label htmlFor="model-select" className="block text-sm font-medium text-text">
-              模型
+              {t('settings.modelLabel')}
             </label>
             {isCustom ? (
               <input
@@ -231,7 +252,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 type="text"
                 value={settings.customModel}
                 onChange={(e) => setCustomModel(e.target.value)}
-                placeholder="例如: deepseek-v4-flash, gpt-4o"
+                placeholder={t('settings.modelPlaceholder')}
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-text placeholder-textSecondary focus:outline-none focus:border-white/30 transition-colors"
               />
             ) : (
@@ -254,7 +275,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
           {isCustom && (
             <div className="space-y-2">
               <label htmlFor="baseurl-input" className="block text-sm font-medium text-text">
-                Base URL
+                {t('settings.baseUrlLabel')}
               </label>
               <input
                 id="baseurl-input"
@@ -265,7 +286,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-text placeholder-textSecondary focus:outline-none focus:border-white/30 transition-colors"
               />
               <p className="text-xs text-textSecondary">
-                需兼容 OpenAI API 格式，路径会自动追加 <code className="px-1 py-0.5 bg-surface rounded text-text">/v1/chat/completions</code>
+                {t('settings.baseUrlHint')} <code className="px-1 py-0.5 bg-surface rounded text-text">/v1/chat/completions</code>
               </p>
             </div>
           )}
@@ -274,7 +295,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label htmlFor="apikey-input" className="block text-sm font-medium text-text">
-                API Key
+                {t('settings.apiKeyLabel')}
               </label>
               {currentProvider.apiKeyUrl && (
                 <a
@@ -283,7 +304,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-text hover:text-white underline underline-offset-2 transition-colors"
                 >
-                  获取 Key
+                  {t('settings.getApiKey')}
                   <ArrowSquareOut weight="thin" size={14} />
                 </a>
               )}
@@ -303,7 +324,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 type="button"
                 onClick={() => setShowApiKey((v) => !v)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-textSecondary hover:text-text hover:bg-surfaceHover transition-colors"
-                title={showApiKey ? '隐藏' : '显示'}
+                title={showApiKey ? t('settings.hideApiKey') : t('settings.showApiKey')}
                 tabIndex={-1}
               >
                 {showApiKey ? <EyeSlash weight="thin" size={18} /> : <Eye weight="thin" size={18} />}
@@ -313,18 +334,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
 
           {/* ----- 高级功能开关 ----- */}
           <div className="space-y-3 pt-2 border-t border-border/30">
-            <div className="text-sm font-medium text-text">高级功能</div>
+            <div className="text-sm font-medium text-text">{t('settings.advanced')}</div>
 
             {/* 网络搜索开关 */}
             <label className="flex items-center justify-between cursor-pointer group">
               <div className="flex-1">
                 <div className="text-sm text-text group-hover:text-white transition-colors">
-                  启用网络搜索
+                  {t('settings.enableSearch')}
                 </div>
                 <div className="text-xs text-textSecondary mt-0.5">
                   {settings.provider === 'deepseek' || settings.provider === 'qwen'
-                    ? '当前模型支持实时搜索'
-                    : '仅 DeepSeek 和 Qwen 支持'}
+                    ? t('settings.searchSupported')
+                    : t('settings.searchUnsupported')}
                 </div>
               </div>
               <button
@@ -349,10 +370,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
             <label className="flex items-center justify-between cursor-pointer group">
               <div className="flex-1">
                 <div className="text-sm text-text group-hover:text-white transition-colors">
-                  启用图片理解 (多模态)
+                  {t('settings.enableVision')}
                 </div>
                 <div className="text-xs text-textSecondary mt-0.5">
-                  支持 GPT-4o/DeepSeek-V4/Qwen-VL 等视觉模型
+                  {t('settings.visionHint')}
                 </div>
               </div>
               <button
@@ -393,7 +414,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
             className="inline-flex items-center gap-2 bg-transparent border border-border text-textSecondary hover:text-text hover:border-white/20 hover:bg-surfaceHover rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTesting ? <CircleNotch weight="bold" size={16} className="animate-spin" /> : <Lightning weight="thin" size={16} />}
-            {isTesting ? '测试中...' : '测试连接'}
+            {isTesting ? t('settings.testing') : t('settings.testConnection')}
           </button>
 
           {/* Cancel / Save */}
@@ -403,14 +424,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
                 onClick={handleClose}
                 className="bg-transparent border border-border text-textSecondary hover:text-text hover:bg-surfaceHover rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               >
-                取消
+                {t('settings.cancel')}
               </button>
             )}
             <button
               onClick={handleSave}
               className="bg-primary text-background hover:bg-primaryHover rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
-              保存
+              {t('settings.save')}
             </button>
           </div>
         </div>
