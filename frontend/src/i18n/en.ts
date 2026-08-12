@@ -1,9 +1,9 @@
 import type zh from './zh';
 
 const en: typeof zh = {
-  'chat.heroTitleLine1': 'From rough idea',
-  'chat.heroTitleLine2': 'to build-ready prompt.',
-  'chat.heroSubtitle': 'Describe a rough idea and the AI will guide you step by step to clarify your requirements.',
+  'chat.heroTitleLine1': "Don't write prompts.",
+  'chat.heroTitleLine2': 'Just say what you want.',
+  'chat.heroSubtitle': 'You bring the idea. We make it clear. Agent Ask asks the right questions and turns rough thoughts into prompts AI can actually build from.',
   'chat.example1': 'I want to build a todo app',
   'chat.example2': 'I need a tool to analyze CSV files',
   'chat.example3': 'I want to create a text adventure game',

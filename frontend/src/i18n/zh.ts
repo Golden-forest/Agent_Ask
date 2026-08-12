@@ -29,9 +29,9 @@ const zh = {
   'accepted.copied': '已复制',
   'accepted.implementationNotes': '实施说明',
   // header
-  'header.taglineA': '问得更好',
+  'header.taglineA': 'Ask Smarter',
   'header.taglineSep': '•',
-  'header.taglineB': '造得更快',
+  'header.taglineB': 'Create Faster',
   'header.toggleTerminalShow': '显示终端日志',
   'header.toggleTerminalHide': '隐藏终端日志',
   'header.settings': '设置',
