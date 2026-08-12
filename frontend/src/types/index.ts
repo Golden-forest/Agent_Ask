@@ -1,3 +1,5 @@
+import type { Language } from '../i18n/types';
+
 export interface ChatMessage {
     id: string;
     content: string;
@@ -69,6 +71,7 @@ export interface LlmSettings {
   customModel: string;
   enableSearch: boolean;        // 启用网络搜索(DeepSeek/Qwen 原生支持)
   enableVision: boolean;        // 启用视觉理解(多模态模型)
+  language: Language;           // UI 语言(zh | en)
 }
 
 // OpenAI API message format

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LlmSettings, ProviderId } from '../types';
 import { PROVIDERS } from '../services/providers';
+import { detectDefaultLanguage } from '../i18n';
+import type { Language } from '../i18n/types';
 
 const DEFAULT_SETTINGS: LlmSettings = {
   provider: 'deepseek',
@@ -11,6 +13,9 @@ const DEFAULT_SETTINGS: LlmSettings = {
   customModel: '',
   enableSearch: false,
   enableVision: false,
+  language: detectDefaultLanguage(
+    typeof navigator !== 'undefined' ? navigator.language : undefined
+  ),
 };
 
 interface SettingsStore {
@@ -23,6 +28,7 @@ interface SettingsStore {
   setCustomModel: (model: string) => void;
   setEnableSearch: (enable: boolean) => void;
   setEnableVision: (enable: boolean) => void;
+  setLanguage: (language: Language) => void;
   setModalOpen: (open: boolean) => void;
   hasApiKey: () => boolean;
 }
@@ -59,6 +65,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setEnableVision: (enableVision) =>
         set((state) => ({ settings: { ...state.settings, enableVision } })),
+
+      setLanguage: (language) =>
+        set((state) => ({ settings: { ...state.settings, language } })),
 
       setModalOpen: (isModalOpen) => set({ isModalOpen }),
 
