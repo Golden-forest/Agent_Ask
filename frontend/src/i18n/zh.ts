@@ -10,7 +10,7 @@ const zh = {
   'chat.example4': '帮我设计一个落地页',
   'chat.example5': '我想做一个交互式仿真网页',
   // chat - 输入区
-  'chat.inputPlaceholder': '描述你的想法，AI 帮你优化成可一键复制给任何 AI 的 Prompt',
+  'chat.inputPlaceholder': '提示词优化，生成可一键复制给任何 AI 的 Prompt',
   'chat.accept': 'Accept',
   'chat.attachFile': '附加文件',
   'chat.acceptTooltip': 'Accept 并生成 Prompt',

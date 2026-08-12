@@ -9,7 +9,7 @@ const en: typeof zh = {
   'chat.example3': 'I want to create a text adventure game',
   'chat.example4': 'Help me design a landing page',
   'chat.example5': 'I want to create an interactive simulation webpage',
-  'chat.inputPlaceholder': 'Describe your idea — AI turns it into a prompt, one-click copy to any AI',
+  'chat.inputPlaceholder': 'Prompt optimization — generate prompts you can one-click copy to any AI',
   'chat.accept': 'Accept',
   'chat.attachFile': 'Attach file',
   'chat.acceptTooltip': 'Accept & Generate Prompt',
