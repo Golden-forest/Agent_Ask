@@ -30,7 +30,7 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const language = useSettingsStore((s) => s.settings.language);
-  const lang: Language = language;
+  const lang = language;
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -38,7 +38,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: TranslationKey, vars?: Record<string, string | number>) => {
-      const dict = DICTS[lang] ?? DICTS.en;
+      const dict = DICTS[lang];
       const template = dict[key];
       return interpolate(template, vars);
     },

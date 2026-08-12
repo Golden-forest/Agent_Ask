@@ -24,7 +24,7 @@ export const AcceptedResult: React.FC<AcceptedResultProps> = ({ summary, prompt,
     };
 
     return (
-        <section className="w-full animate-slide-up" aria-label="Accepted prompt">
+        <section className="w-full animate-slide-up" aria-label={t('accepted.sectionAria')}>
             <div className="mb-5 flex items-center gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-success">
                     <Check className="h-3.5 w-3.5" strokeWidth={2.5} />

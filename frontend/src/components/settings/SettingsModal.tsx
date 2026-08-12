@@ -398,7 +398,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ forceOpen = false,
           {!isCustom && (
             <div className="text-xs text-textSecondary bg-surface/50 border border-border/50 rounded-lg px-3 py-2 space-y-1">
               <div>
-                <span className="text-textSecondary">Endpoint: </span>
+                <span className="text-textSecondary">{t('settings.endpointLabel')}</span>
                 <span className="text-text font-mono">{currentProvider.baseUrl}/v1/chat/completions</span>
               </div>
             </div>

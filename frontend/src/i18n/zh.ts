@@ -21,6 +21,7 @@ const zh = {
   'loading.responding': 'AI 正在回复',
   // accepted result
   'accepted.label': '已采纳',
+  'accepted.sectionAria': '已采纳的提示词',
   'accepted.summary': '需求摘要',
   'accepted.optimizedPrompt': '优化后的 Prompt',
   'accepted.copyAria': '复制优化后的 Prompt',
@@ -46,6 +47,7 @@ const zh = {
   'settings.modelPlaceholder': '例如：deepseek-v4-flash, gpt-4o',
   'settings.baseUrlLabel': 'Base URL',
   'settings.baseUrlHint': '需兼容 OpenAI API 格式，路径会自动追加',
+  'settings.endpointLabel': 'Endpoint：',
   'settings.apiKeyLabel': 'API Key',
   'settings.getApiKey': '获取 Key',
   'settings.showApiKey': '显示',
