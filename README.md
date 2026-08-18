@@ -200,3 +200,5 @@ agent_ask/
 ## License
 
 MIT
+---
+> 🔒 **Available for freelance** — AI agents, LLM automation, Python/FastAPI backends, and full product builds. Reach me: [flint2026support@gmail.com](mailto:flint2026support@gmail.com)
